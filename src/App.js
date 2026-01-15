@@ -7,6 +7,7 @@ import Wallet from "./Pages/Wallet";
 import Investment from "./Pages/Investment";
 import Transactions from "./Pages/Transactions";
 import ProtectedRoute from "./Commponets/ProtectedRoute";
+import Deposit from "./Pages/Deposit";
 
 function App() {
   return (
@@ -47,6 +48,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Transactions />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/deposit"
+          element={
+            <ProtectedRoute>
+              <Deposit  />
             </ProtectedRoute>
           }
         />

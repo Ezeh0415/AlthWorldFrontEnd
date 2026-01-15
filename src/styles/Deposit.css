@@ -1,0 +1,806 @@
+/* Deposit.css */
+.deposit-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.deposit-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) translateX(-4px);
+}
+
+.deposit-title {
+  font-size: 2.5rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.title-icon {
+  font-size: 2rem;
+}
+
+.deposit-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1rem;
+}
+
+.deposit-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.amount-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  color: #333;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-icon {
+  color: #667eea;
+}
+
+.amount-input-container {
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  color: #666;
+  font-weight: bold;
+}
+
+.amount-input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  font-size: 1.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.amount-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-helper {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.payment-methods-section {
+  margin-bottom: 2rem;
+}
+
+.payment-methods-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.payment-method-card {
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.payment-method-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.payment-method-card.selected {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.payment-method-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment-method-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.payment-icon {
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.payment-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.payment-min {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.check-icon {
+  font-size: 1.25rem;
+}
+
+.continue-button {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.continue-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.continue-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.info-box {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f0f4ff;
+  border-radius: 12px;
+  display: flex;
+  gap: 1rem;
+}
+
+.info-icon {
+  color: #667eea;
+  font-size: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+.info-content {
+  flex: 1;
+}
+
+.info-content p {
+  margin: 0.25rem 0;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.error-message {
+  background: #fee;
+  border: 1px solid #fcc;
+  color: #c00;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.error-close {
+  background: none;
+  border: none;
+  color: #c00;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+
+.back-action-button {
+  background: none;
+  border: 2px solid #667eea;
+  color: #667eea;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
+}
+
+.back-action-button:hover {
+  background: #667eea;
+  color: white;
+}
+
+.deposit-details {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.deposit-type {
+  color: #667eea;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.deposit-amount-display {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 1rem 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  background: #ff9800;
+  color: white;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+  margin: 2rem 0;
+}
+
+.wallet-section {
+  margin-bottom: 2rem;
+}
+
+.qr-toggle {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.qr-toggle-button {
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: 2px solid #667eea;
+  color: #667eea;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.qr-toggle-button:hover {
+  background: #667eea;
+  color: white;
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.qr-code-wrapper {
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.qr-code-placeholder {
+  position: relative;
+}
+
+.qr-code-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qr-code-row {
+  display: flex;
+  gap: 2px;
+}
+
+.qr-code-cell {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  transition: all 0.3s ease;
+}
+
+.qr-code-cell.filled {
+  background: #333;
+}
+
+.qr-code-text {
+  text-align: center;
+  margin-top: 1rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.wallet-address-container {
+  position: relative;
+  background: #f5f7fa;
+  border-radius: 12px;
+  padding: 1rem;
+  padding-right: 3.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.wallet-address-text {
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 0.9rem;
+  word-break: break-all;
+  color: #333;
+  line-height: 1.4;
+}
+
+.copy-button {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: 2px solid #667eea;
+  color: #667eea;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.copy-button:hover {
+  background: #667eea;
+  color: white;
+}
+
+.copy-icon {
+  font-size: 1.25rem;
+}
+
+.copy-hint {
+  color: #666;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.instructions-box {
+  background: #fff8e1;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.instructions-title {
+  color: #ff9800;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.instructions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.instructions-list li {
+  padding: 0.5rem 0;
+  color: #666;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.instructions-list li:before {
+  content: "•";
+  color: #ff9800;
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
+
+.instructions-list li strong {
+  color: #333;
+}
+
+.status-indicator {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f0f4ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.status-spinner {
+  color: #667eea;
+  font-size: 1.25rem;
+  animation: spin 2s linear infinite;
+}
+
+.status-message {
+  color: #555;
+  margin: 0;
+  flex: 1;
+}
+
+.copy-notification {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .deposit-container {
+    padding: 1rem;
+  }
+
+  .deposit-title {
+    font-size: 2rem;
+  }
+
+  .deposit-card {
+    padding: 1.5rem;
+  }
+
+  .payment-methods-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .deposit-amount-display {
+    font-size: 2.5rem;
+  }
+
+  .back-button {
+    position: relative;
+    transform: none;
+    margin-bottom: 1rem;
+  }
+
+  .deposit-header {
+    text-align: left;
+  }
+}
+
+/* Solution 1: Canvas QR Code */
+.qr-code-container {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin: 20px 0;
+}
+
+.qr-code-image-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 15px;
+}
+
+.qr-code-image {
+  width: 200px;
+  height: 200px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.qr-code-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.qr-overlay-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  letter-spacing: 1px;
+}
+
+.qr-code-details {
+  margin-top: 15px;
+}
+
+.qr-currency {
+  font-size: 14px;
+  font-weight: 600;
+  color: #667eea;
+  margin-bottom: 5px;
+}
+
+.qr-address-preview {
+  font-family: "Monaco", "Menlo", monospace;
+  font-size: 11px;
+  color: #666;
+  background: #f5f7fa;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin: 8px 0;
+  display: inline-block;
+}
+
+.qr-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  margin-top: 8px;
+}
+
+/* Solution 2: ASCII QR Code */
+.qr-code-ascii-container {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.qr-ascii-grid {
+  display: inline-flex;
+  flex-direction: column;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.qr-ascii-row {
+  display: flex;
+}
+
+.qr-ascii-cell {
+  transition: all 0.2s ease;
+}
+
+.qr-ascii-black {
+  background-color: #000000;
+}
+
+.qr-ascii-white {
+  background-color: #ffffff;
+}
+
+.qr-ascii-info {
+  margin-top: 15px;
+}
+
+.qr-ascii-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.qr-ascii-data {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.qr-data-type {
+  background: #667eea;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.qr-data-amount {
+  background: #f0f4ff;
+  color: #667eea;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Solution 3: External API QR Code */
+.qr-code-external-container {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.qr-external-image {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.qr-external-img {
+  width: 200px;
+  height: 200px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.qr-external-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.qr-overlay-icon {
+  font-size: 24px;
+  color: rgba(102, 126, 234, 0.8);
+  background: rgba(255, 255, 255, 0.9);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.qr-external-details h4 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.qr-external-address {
+  background: #f5f7fa;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 15px 0;
+  word-break: break-all;
+}
+
+.qr-external-address code {
+  font-family: "Monaco", "Menlo", monospace;
+  font-size: 11px;
+  color: #444;
+}
+
+.qr-external-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.qr-meta-crypto {
+  background: #667eea;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.qr-meta-separator {
+  color: #999;
+}
+
+.qr-meta-amount {
+  background: #f0f4ff;
+  color: #667eea;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .qr-code-image,
+  .qr-external-img {
+    width: 180px;
+    height: 180px;
+  }
+
+  .qr-ascii-cell {
+    width: 5px;
+    height: 5px;
+  }
+}
