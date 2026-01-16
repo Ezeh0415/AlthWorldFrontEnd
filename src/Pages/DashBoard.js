@@ -54,7 +54,6 @@ const Dashboard = () => {
       setUseMockData(false);
 
       const data = await ApiService.getDashboardData();
-      console.log("API Response:", data);
 
       // Transform API data to match our component structure
       const transformedData = transformApiData(data);

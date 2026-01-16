@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   CopyOutlined,
   CheckOutlined,
@@ -9,6 +9,8 @@ import {
   LoadingOutlined,
 } from "@ant-design/icons";
 import "../styles/Deposit.css";
+import { Link } from "react-router-dom";
+import ApiService from "../Commponets/ApiService";
 
 const Deposit = () => {
   const [amount, setAmount] = useState("");
@@ -19,37 +21,34 @@ const Deposit = () => {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [showQrCode, setShowQrCode] = useState(false);
+  const [walletData, setWalletData] = useState();
 
-  const paymentMethods = [
-    {
-      id: "bitcoin",
-      name: "Bitcoin (BTC)",
-      icon: "₿",
-      color: "#F7931A",
-      minAmount: 20,
-    },
-    {
-      id: "ethereum",
-      name: "Ethereum (ETH)",
-      icon: "Ξ",
-      color: "#627EEA",
-      minAmount: 20,
-    },
-    {
-      id: "usdt_erc20",
-      name: "USDT (ERC20)",
-      icon: "₮",
-      color: "#26A17B",
-      minAmount: 50,
-    },
-    {
-      id: "usdt_trc20",
-      name: "USDT (TRC20)",
-      icon: "₮",
-      color: "#FF6B6B",
-      minAmount: 50,
-    },
-  ];
+  //   const paymentMethods =
+  //     walletData &&
+  //     walletData.map((wallet) => {
+  //       const config = {
+  //         bitcoin: { name: "Bitcoin (BTC)", icon: "₿", color: "#F7931A" },
+  //         ethereum: { name: "Ethereum (ETH)", icon: "Ξ", color: "#627EEA" },
+  //         usdt_erc20: { name: "USDT (ERC20)", icon: "₮", color: "#26A17B" },
+  //         usdt_trc20: { name: "USDT (TRC20)", icon: "₮", color: "#FF6B6B" },
+  //         // Add more as needed
+  //       };
+
+  //       const defaults = config[wallet.cryptoName] || {
+  //         name: wallet.cryptoName.toUpperCase(),
+  //         icon: "₿",
+  //         color: "#000000",
+  //       };
+
+  //       return {
+  //         id: wallet.cryptoName,
+  //         name: defaults.name,
+  //         icon: defaults.icon,
+  //         color: defaults.color,
+  //         minAmount: wallet.minAmount || 10,
+  //         address: wallet.cryptoAddress, // Store the actual wallet address
+  //       };
+  //     });
 
   const formatAmount = (value) => {
     // Remove all non-numeric characters except decimal point
@@ -71,8 +70,29 @@ const Deposit = () => {
     return "";
   };
 
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await ApiService.getWallets();
+      console.log(data.data);
+      setWalletData(data.data);
+    } catch (err) {
+      console.error("API Error:", err);
+      setError(err.message || "Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleContinue = async () => {
     const validationError = validateAmount();
+
     if (validationError) {
       setError(validationError);
       return;
@@ -87,31 +107,36 @@ const Deposit = () => {
     setError("");
 
     try {
-      // Simulate API call to save to database
       const depositData = {
         amount: parseFloat(amount),
         paymentType,
       };
 
-      // Save to database (simulated)
       console.log("Saving to database:", depositData);
 
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Get wallet address based on payment type (simulated from database)
-      const walletAddresses = {
-        bitcoin: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-        ethereum: "0x742d35Cc6634C0532925a3b844Bc9e8a5f03a7d5",
-        usdt_erc20: "0x742d35Cc6634C0532925a3b844Bc9e8a5f03a7d5",
-        usdt_trc20: "TUr4Fwz9yW5uE5Z7vdMqVbUC8sbt4sAz6w",
-      };
+      // Find selected wallet from paymentMethods
+      const selectedWallet = paymentMethods.find(
+        (method) => method.id === paymentType
+      );
 
-      const address = walletAddresses[paymentType] || "";
+      if (!selectedWallet) {
+        throw new Error("Selected payment method not found");
+      }
+
+      // Get address from the selected wallet
+      const address = selectedWallet.address || "";
+
+      if (!address) {
+        throw new Error("Wallet address not available");
+      }
+
       setWalletAddress(address);
       setStage("display");
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError(err.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -131,6 +156,33 @@ const Deposit = () => {
       setPaymentType("");
     }
   };
+
+  const paymentMethods =
+    walletData &&
+    walletData.map((wallet) => {
+      const config = {
+        bitcoin: { name: "Bitcoin (BTC)", icon: "₿", color: "#F7931A" },
+        ethereum: { name: "Ethereum (ETH)", icon: "Ξ", color: "#627EEA" },
+        usdt_erc20: { name: "USDT (ERC20)", icon: "₮", color: "#26A17B" },
+        usdt_trc20: { name: "USDT (TRC20)", icon: "₮", color: "#FF6B6B" },
+        // Add more as needed
+      };
+
+      const defaults = config[wallet.cryptoName] || {
+        name: wallet.cryptoName.toUpperCase(),
+        icon: "₿",
+        color: "#000000",
+      };
+
+      return {
+        id: wallet.cryptoName,
+        name: defaults.name,
+        icon: defaults.icon,
+        color: defaults.color,
+        minAmount: wallet.minAmount || 10,
+        address: wallet.cryptoAddress, // Store the actual wallet address
+      };
+    });
 
   const generateQRCode = () => {
     const qrData = walletAddress;
@@ -191,10 +243,10 @@ const Deposit = () => {
     <div className="deposit-container">
       {/* Header */}
       <div className="deposit-header">
-        <button className="back-button" onClick={handleBack}>
+        <Link to={"/"} className="back-button" onClick={handleBack}>
           <ArrowLeftOutlined />
           Back
-        </button>
+        </Link>
         <h1 className="deposit-title">
           <DollarOutlined className="title-icon" />
           Deposit Funds

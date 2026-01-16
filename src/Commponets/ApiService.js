@@ -57,6 +57,10 @@ class ApiService {
     return await this.request("dashboard", { method: "GET" });
   }
 
+  async getWallets() {
+    return await this.request("getWallets", { method: "GET" });
+  }
+
   // Add more methods as needed
 }
 
