@@ -21,34 +21,8 @@ const Deposit = () => {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [showQrCode, setShowQrCode] = useState(false);
-  const [walletData, setWalletData] = useState();
-
-  //   const paymentMethods =
-  //     walletData &&
-  //     walletData.map((wallet) => {
-  //       const config = {
-  //         bitcoin: { name: "Bitcoin (BTC)", icon: "₿", color: "#F7931A" },
-  //         ethereum: { name: "Ethereum (ETH)", icon: "Ξ", color: "#627EEA" },
-  //         usdt_erc20: { name: "USDT (ERC20)", icon: "₮", color: "#26A17B" },
-  //         usdt_trc20: { name: "USDT (TRC20)", icon: "₮", color: "#FF6B6B" },
-  //         // Add more as needed
-  //       };
-
-  //       const defaults = config[wallet.cryptoName] || {
-  //         name: wallet.cryptoName.toUpperCase(),
-  //         icon: "₿",
-  //         color: "#000000",
-  //       };
-
-  //       return {
-  //         id: wallet.cryptoName,
-  //         name: defaults.name,
-  //         icon: defaults.icon,
-  //         color: defaults.color,
-  //         minAmount: wallet.minAmount || 10,
-  //         address: wallet.cryptoAddress, // Store the actual wallet address
-  //       };
-  //     });
+  const [walletData, setWalletData] = useState([]);
+  const [isFetching, setIsFetching] = useState(true);
 
   const formatAmount = (value) => {
     // Remove all non-numeric characters except decimal point
@@ -62,7 +36,7 @@ const Deposit = () => {
     if (numValue <= 0) return "Amount must be greater than 0";
 
     if (paymentType) {
-      const method = paymentMethods.find((m) => m.id === paymentType);
+      const method = getPaymentMethods().find((m) => m.id === paymentType);
       if (method && numValue < method.minAmount) {
         return `Minimum deposit is $${method.minAmount}`;
       }
@@ -76,18 +50,56 @@ const Deposit = () => {
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      setIsFetching(true);
+      setError("");
 
       const data = await ApiService.getWallets();
-      console.log(data.data);
-      setWalletData(data.data);
+
+      setWalletData(data.data || []);
     } catch (err) {
       console.error("API Error:", err);
-      setError(err.message || "Failed to load dashboard data");
+      setError(err.message || "Failed to load payment methods");
     } finally {
-      setLoading(false);
+      setIsFetching(false);
     }
+  };
+
+  // Helper function to get payment methods
+  const getPaymentMethods = () => {
+    if (!walletData || walletData.length === 0) return [];
+
+    return walletData.map((wallet) => {
+      // Log wallet structure to debug
+
+      const config = {
+        bitcoin: { name: "Bitcoin (BTC)", icon: "₿", color: "#F7931A" },
+        ethereum: { name: "Ethereum (ETH)", icon: "Ξ", color: "#627EEA" },
+        usdt_erc20: { name: "USDT (ERC20)", icon: "₮", color: "#26A17B" },
+        usdt_trc20: { name: "USDT (TRC20)", icon: "₮", color: "#FF6B6B" },
+        // Add more as needed
+      };
+
+      // Extract crypto name - adjust based on your API response structure
+      const cryptoName =
+        wallet.cryptoName || wallet.network || wallet.type || "unknown";
+      const address =
+        wallet.cryptoAddress || wallet.address || wallet.walletAddress || "";
+      const minAmount = wallet.minAmount || 10;
+
+      const defaults = config[cryptoName] || {
+        name: cryptoName.toUpperCase(),
+        icon: "₿",
+        color: "#000000",
+      };
+
+      return {
+        id: cryptoName,
+        name: defaults.name,
+        color: defaults.color,
+        minAmount: minAmount,
+        address: address,
+      };
+    });
   };
 
   const handleContinue = async () => {
@@ -112,13 +124,16 @@ const Deposit = () => {
         paymentType,
       };
 
-      console.log("Saving to database:", depositData);
+
+      const result = await ApiService.Deposit(depositData);
+
+      console.log("sent",result)
 
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Find selected wallet from paymentMethods
-      const selectedWallet = paymentMethods.find(
+      const selectedWallet = getPaymentMethods().find(
         (method) => method.id === paymentType
       );
 
@@ -156,33 +171,6 @@ const Deposit = () => {
       setPaymentType("");
     }
   };
-
-  const paymentMethods =
-    walletData &&
-    walletData.map((wallet) => {
-      const config = {
-        bitcoin: { name: "Bitcoin (BTC)", icon: "₿", color: "#F7931A" },
-        ethereum: { name: "Ethereum (ETH)", icon: "Ξ", color: "#627EEA" },
-        usdt_erc20: { name: "USDT (ERC20)", icon: "₮", color: "#26A17B" },
-        usdt_trc20: { name: "USDT (TRC20)", icon: "₮", color: "#FF6B6B" },
-        // Add more as needed
-      };
-
-      const defaults = config[wallet.cryptoName] || {
-        name: wallet.cryptoName.toUpperCase(),
-        icon: "₿",
-        color: "#000000",
-      };
-
-      return {
-        id: wallet.cryptoName,
-        name: defaults.name,
-        icon: defaults.icon,
-        color: defaults.color,
-        minAmount: wallet.minAmount || 10,
-        address: wallet.cryptoAddress, // Store the actual wallet address
-      };
-    });
 
   const generateQRCode = () => {
     const qrData = walletAddress;
@@ -222,7 +210,8 @@ const Deposit = () => {
           </div>
           <div className="qr-external-meta">
             <span className="qr-meta-crypto">
-              {paymentMethods.find((m) => m.id === paymentType)?.name}
+              {getPaymentMethods().find((m) => m.id === paymentType)?.name ||
+                paymentType}
             </span>
             <span className="qr-meta-separator">•</span>
             <span className="qr-meta-amount">${amount}</span>
@@ -238,6 +227,8 @@ const Deposit = () => {
       maximumFractionDigits: 2,
     }).format(num);
   };
+
+  const paymentMethods = getPaymentMethods();
 
   return (
     <div className="deposit-container">
@@ -265,8 +256,16 @@ const Deposit = () => {
         </div>
       )}
 
+      {/* Loading State */}
+      {isFetching && (
+        <div className="loading-container">
+          <LoadingOutlined className="loading-spinner" />
+          <p>Loading payment methods...</p>
+        </div>
+      )}
+
       {/* Input Stage */}
-      {stage === "input" && (
+      {!isFetching && stage === "input" && (
         <div className="deposit-card">
           {/* Amount Input */}
           <div className="amount-section">
@@ -285,56 +284,71 @@ const Deposit = () => {
           </div>
 
           {/* Payment Methods */}
-          <div className="payment-methods-section">
-            <h2 className="section-title">
-              <SecurityScanOutlined className="section-icon" />
-              Select Payment Method
-            </h2>
-            <div className="payment-methods-grid">
-              {paymentMethods.map((method) => (
-                <div
-                  key={method.id}
-                  className={`payment-method-card ${
-                    paymentType === method.id ? "selected" : ""
-                  }`}
-                  onClick={() => setPaymentType(method.id)}
-                  style={{
-                    borderColor:
-                      paymentType === method.id ? method.color : "#e0e0e0",
-                    backgroundColor:
-                      paymentType === method.id ? `${method.color}10` : "white",
-                  }}
-                >
-                  <div className="payment-method-content">
-                    <div className="payment-method-left">
-                      <span
-                        className="payment-icon"
-                        style={{ color: method.color }}
-                      >
-                        {method.icon}
-                      </span>
-                      <div>
-                        <h3 className="payment-name">{method.name}</h3>
-                        <p className="payment-min">Min: ${method.minAmount}</p>
+          {paymentMethods.length > 0 ? (
+            <div className="payment-methods-section">
+              <h2 className="section-title">
+                <SecurityScanOutlined className="section-icon" />
+                Select Payment Method
+              </h2>
+              <div className="payment-methods-grid">
+                {paymentMethods.map((method) => (
+                  <div
+                    key={method.id}
+                    className={`payment-method-card ${
+                      paymentType === method.id ? "selected" : ""
+                    }`}
+                    onClick={() => setPaymentType(method.id)}
+                    style={{
+                      borderColor:
+                        paymentType === method.id ? method.color : "#e0e0e0",
+                      backgroundColor:
+                        paymentType === method.id
+                          ? `${method.color}10`
+                          : "white",
+                    }}
+                  >
+                    <div className="payment-method-content">
+                      <div className="payment-method-left">
+                        <span
+                          className="payment-icon"
+                          style={{ color: method.color }}
+                        >
+                          {method.icon}
+                        </span>
+                        <div>
+                          <h3 className="payment-name">{method.name}</h3>
+                          <p className="payment-min">
+                            Min: ${method.minAmount}
+                          </p>
+                        </div>
                       </div>
+                      {paymentType === method.id && (
+                        <CheckOutlined
+                          className="check-icon"
+                          style={{ color: method.color }}
+                        />
+                      )}
                     </div>
-                    {paymentType === method.id && (
-                      <CheckOutlined
-                        className="check-icon"
-                        style={{ color: method.color }}
-                      />
-                    )}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="no-payment-methods">
+              <p>No payment methods available at the moment.</p>
+              <button onClick={fetchDashboardData} className="retry-button">
+                Retry
+              </button>
+            </div>
+          )}
 
           {/* Continue Button */}
           <button
             className="continue-button"
             onClick={handleContinue}
-            disabled={loading || !amount || !paymentType}
+            disabled={
+              loading || !amount || !paymentType || paymentMethods.length === 0
+            }
           >
             {loading ? (
               <>
@@ -359,7 +373,7 @@ const Deposit = () => {
       )}
 
       {/* Display Stage */}
-      {stage === "display" && walletAddress && (
+      {!isFetching && stage === "display" && walletAddress && (
         <div className="deposit-card">
           {/* Back Button */}
           <button className="back-action-button" onClick={handleBack}>
@@ -370,7 +384,9 @@ const Deposit = () => {
           {/* Deposit Details */}
           <div className="deposit-details">
             <h2 className="deposit-type">
-              Deposit {paymentMethods.find((m) => m.id === paymentType)?.name}
+              Deposit{" "}
+              {paymentMethods.find((m) => m.id === paymentType)?.name ||
+                paymentType}
             </h2>
             <div className="deposit-amount-display">
               ${formatDisplayAmount(parseFloat(amount))}
@@ -384,8 +400,10 @@ const Deposit = () => {
           <div className="wallet-section">
             <h2 className="section-title">
               <SecurityScanOutlined className="section-icon" />
-              Send {paymentMethods.find((m) => m.id === paymentType)?.name} to
-              this address
+              Send{" "}
+              {paymentMethods.find((m) => m.id === paymentType)?.name ||
+                paymentType}{" "}
+              to this address
             </h2>
 
             {/* QR Code Toggle */}
@@ -438,15 +456,6 @@ const Deposit = () => {
               <li>Contact support if deposit doesn't appear after 2 days</li>
             </ul>
           </div>
-
-          {/* Status Indicator */}
-          {/* <div className="status-indicator">
-            <LoadingOutlined className="status-spinner" />
-            <p className="status-message">
-              Waiting for your deposit. You can close this page and check your
-              balance later.
-            </p>
-          </div> */}
         </div>
       )}
 

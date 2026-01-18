@@ -1177,3 +1177,268 @@
     opacity: 0.5;
   }
 }
+
+/* Coming Soon Styles */
+.coming-soon-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  border: 2px dashed #cbd5e1;
+  gap: 16px;
+}
+
+.coming-soon-text {
+  font-size: 1.1rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.coming-soon-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 64px 24px;
+}
+
+.coming-soon-actions {
+  margin-top: 16px;
+}
+
+.coming-soon-tag {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Empty state with coming soon */
+.empty-state-modern .coming-soon-placeholder {
+  background: transparent;
+  border: none;
+  padding: 24px;
+}
+
+/* Mock data banner */
+.mock-data-banner {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px;
+  color: #92400e;
+  font-size: 0.9rem;
+}
+
+.mock-data-banner .btn-retry {
+  margin-left: auto;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.mock-data-banner .btn-retry:hover {
+  background: #d97706;
+}
+
+/* Transaction panel */
+.transactions-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 24px;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
+.transaction-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.transaction-type {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.transaction-date {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.transaction-amount.positive {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.transaction-amount.negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* Recent Deposits Panel Styles */
+.recent-deposits-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 24px;
+}
+
+.recent-deposits-panel .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.recent-deposits-panel .panel-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.deposit-total {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.deposits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deposit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.deposit-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.deposit-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #d1fae5;
+  border-radius: 50%;
+}
+
+.deposit-info {
+  flex: 1;
+}
+
+.deposit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.deposit-currency {
+  font-weight: 500;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.deposit-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.deposit-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.deposit-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.deposit-amount {
+  font-weight: 600;
+  color: #10b981;
+  font-size: 0.95rem;
+}
+
+/* Stats Panel Updates */
+.stat-icon-small.total-deposits {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.stat-icon-small.total-investments {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .recent-deposits-panel {
+    margin-top: 16px;
+  }
+
+  .deposit-item {
+    padding: 10px;
+  }
+
+  .deposit-currency {
+    font-size: 0.9rem;
+  }
+
+  .deposit-amount {
+    font-size: 0.9rem;
+  }
+}

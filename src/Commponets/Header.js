@@ -47,10 +47,11 @@ const Header = () => {
     { id: 5, label: "Profile", icon: <UserCircleOutlined />, path: "/profile" },
   ];
 
+  const personalData = localStorage.getItem("user");
+  const user = JSON.parse(personalData);
   const userData = {
-    name: "John Doe",
-    email: "john@example.com",
-    tier: "Premium Tier",
+    name: user && user.fullName,
+    email: user && user.email,
     avatarColor: "linear-gradient(135deg, #22c55e, #3b82f6)",
   };
 
@@ -159,7 +160,7 @@ const Header = () => {
         </div>
 
         <div className="header-right">
-      <button
+          <button
             className="icon-btn notification-btn"
             onClick={handleNotificationClick}
             aria-label={`Notifications, ${notifications} unread`}
@@ -229,14 +230,14 @@ const Header = () => {
                   <span>My Profile</span>
                 </button>
 
-                <button
+                {/* <button
                   className="dropdown-item"
                   role="menuitem"
                   onClick={() => console.log("Settings clicked")}
                 >
                   <SettingOutlined />
                   <span>Settings</span>
-                </button>
+                </button> */}
 
                 <div className="dropdown-divider" aria-hidden="true" />
 

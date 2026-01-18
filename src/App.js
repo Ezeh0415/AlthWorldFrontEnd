@@ -8,6 +8,8 @@ import Investment from "./Pages/Investment";
 import Transactions from "./Pages/Transactions";
 import ProtectedRoute from "./Commponets/ProtectedRoute";
 import Deposit from "./Pages/Deposit";
+import AdminSignUp from "./Pages/Admin/AdminSignUp";
+import AdminLogin from "./Pages/Admin/AdminLogin";
 
 function App() {
   return (
@@ -17,8 +19,11 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
 
-        {/* dashboard route for user */}
+        {/* admin signin or login */}
+        <Route path="/AdminSignUp" element={<AdminSignUp />} />
+        <Route path="/AdminLogin" element={<AdminLogin />} />
 
+        {/* dashboard route for user */}
         <Route
           path="/"
           element={
@@ -56,7 +61,7 @@ function App() {
           path="/deposit"
           element={
             <ProtectedRoute>
-              <Deposit  />
+              <Deposit />
             </ProtectedRoute>
           }
         />

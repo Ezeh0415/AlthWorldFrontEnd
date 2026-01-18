@@ -25,11 +25,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: -webkit-sticky;
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 /* Left Section */
@@ -243,6 +244,7 @@
 .profile-name {
   font-size: 14px;
   font-weight: 600;
+  text-transform: capitalize;
 }
 
 .profile-tier {
@@ -305,6 +307,7 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
+  text-transform: capitalize;
 }
 
 .dropdown-email {
@@ -539,6 +542,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(4px);
   z-index: 1000;
 }

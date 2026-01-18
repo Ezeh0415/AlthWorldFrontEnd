@@ -19,7 +19,7 @@ class ApiService {
       ...options.headers,
     };
 
-    const url = `${this.baseUrl}${endpoint}?key=${this.apiKey}`;
+    const url = `${this.baseUrl}${endpoint}`;
 
     try {
       const response = await fetch(url, {
@@ -35,8 +35,16 @@ class ApiService {
       }
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        const errorText = await response.text();
+
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(
+            errorData.message || `HTTP ${response.status}: ${errorText}`
+          );
+        } catch (e) {
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
       }
 
       return await response.json();
@@ -59,6 +67,21 @@ class ApiService {
 
   async getWallets() {
     return await this.request("getWallets", { method: "GET" });
+  }
+
+  // Post methods
+
+  async Deposit(depositData) {
+    return await this.request("payment", {
+      method: "POST",
+      body: JSON.stringify(depositData),
+    });
+  }
+  async invest(investmentData) {
+    return await this.request("invest", {
+      method: "POST",
+      body: JSON.stringify(investmentData),
+    });
   }
 
   // Add more methods as needed

@@ -15,13 +15,16 @@ import {
   PercentageOutlined,
   ReloadOutlined,
   SearchOutlined,
-  FilterOutlined,
   ExclamationCircleOutlined,
   LoadingOutlined,
   RocketOutlined,
   StarOutlined,
   TrophyOutlined,
   BarChartOutlined,
+  QuestionCircleOutlined,
+  ArrowDownOutlined, // For deposits
+ // For withdrawals
+  CheckCircleFilled, // For confirmed deposits
 } from "@ant-design/icons";
 import "../styles/Investment.css";
 import Header from "../Commponets/Header";
@@ -33,13 +36,12 @@ const Investments = () => {
   const [loading, setLoading] = useState(true);
   const [showValues, setShowValues] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [filterType, setFilterType] = useState("all");
   const [showNewInvestmentModal, setShowNewInvestmentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("");
   const [loadingInvestment, setLoadingInvestment] = useState(false);
   const [error, setError] = useState("");
-  const [useMockData, setUseMockData] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
 
   /* ------------------ PLANS ------------------ */
   const investmentPlans = [
@@ -93,30 +95,65 @@ const Investments = () => {
     },
   ];
 
-  /* ------------------ FETCH INVESTMENTS ------------------ */
+  /* ------------------ FETCH DATA ------------------ */
   const fetchUserInvestments = async () => {
     try {
       setLoading(true);
       setError("");
-      setUseMockData(false);
 
-      // Try to fetch from API
+      // Fetch dashboard data
       const data = await ApiService.getDashboardData();
-      console.log("Investments API Response:", data);
+      setDashboardData(data);
 
-      // Transform API data for investments
-      const apiInvestments = data.investments || [];
-      setInvestments(apiInvestments);
+      // Extract investments from dashboard data
+      let apiInvestments = [];
 
-      if (apiInvestments.length === 0) {
-        setUseMockData(true);
-        setInvestments(mockInvestments);
+      if (data.investments && Array.isArray(data.investments)) {
+        // Transform your investment data to match component structure
+        apiInvestments = data.investments.map((inv, index) => {
+          // Extract data from your backend structure
+          const amount = inv.amount || 0;
+          const roi =
+            inv.roi || inv.investmentType === "basic"
+              ? 2
+              : inv.investmentType === "standard"
+              ? 4
+              : inv.investmentType === "premium"
+              ? 6
+              : inv.investmentType === "ultimate"
+              ? 8
+              : 2;
+
+          // Calculate total returns if not present
+          const totalReturns = inv.profits || inv.totalReturns || 0;
+          const currentValue = amount + totalReturns;
+
+          return {
+            _id: inv._id || `inv-${Date.now()}-${index}`,
+            amount: amount,
+            roi: roi,
+            plan: inv.plan || inv.investmentType || "basic",
+            investmentType: inv.investmentType || inv.plan || "basic",
+            status: inv.status || "active",
+            totalReturns: totalReturns,
+            currentValue: currentValue,
+            startDate:
+              inv.startDate ||
+              inv.investmentStartDate ||
+              new Date().toISOString(),
+            endDate:
+              inv.endDate ||
+              inv.investmentEndDate ||
+              new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            createdAt: inv.createdAt || new Date().toISOString(),
+          };
+        });
       }
+
+      setInvestments(apiInvestments);
     } catch (err) {
       console.error("Failed to fetch investments:", err);
       setError("Failed to load investments");
-      setUseMockData(true);
-      setInvestments(mockInvestments);
     } finally {
       setLoading(false);
     }
@@ -125,6 +162,28 @@ const Investments = () => {
   useEffect(() => {
     fetchUserInvestments();
   }, []);
+
+  /* ------------------ FILTER DEPOSITS ------------------ */
+  const recentDeposits = useMemo(() => {
+    if (
+      !dashboardData?.transactions ||
+      !Array.isArray(dashboardData.transactions)
+    ) {
+      return [];
+    }
+
+    // Filter only deposit transactions
+    const deposits = dashboardData.transactions
+      .filter((txn) => txn.type === "deposit")
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || b.date || 0) -
+          new Date(a.createdAt || a.date || 0)
+      )
+      .slice(0, 5); // Get last 5 deposits
+
+    return deposits;
+  }, [dashboardData]);
 
   /* ------------------ STATS ------------------ */
   const userStats = useMemo(() => {
@@ -137,6 +196,11 @@ const Investments = () => {
       cancelled: 0,
       avgROI: 0,
       totalInvestments: 0,
+      totalDeposits: recentDeposits.length,
+      totalDepositAmount: recentDeposits.reduce(
+        (sum, deposit) => sum + (deposit.requestedAmount || 0),
+        0
+      ),
     };
 
     investments.forEach((i) => {
@@ -158,38 +222,46 @@ const Investments = () => {
       ? stats.avgROI / stats.totalInvestments
       : 0;
     return stats;
-  }, [investments]);
+  }, [investments, recentDeposits]);
 
-  /* ------------------ FILTER ------------------ */
-  const filteredInvestments = useMemo(() => {
-    return investments.filter((inv) => {
-      const matchesSearch =
-        !searchTerm ||
-        (inv.plan &&
-          inv.plan.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (inv.investmentType &&
-          inv.investmentType
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())) ||
-        (inv._id && inv._id.toString().includes(searchTerm));
-
-      const status = inv.status || inv.investmentStatus;
-      const matchesStatus = filterStatus === "all" || status === filterStatus;
-
-      const type = inv.plan || inv.investmentType;
-      const matchesType = filterType === "all" || type === filterType;
-
-      return matchesSearch && matchesStatus && matchesType;
-    });
-  }, [investments, searchTerm, filterStatus, filterType]);
+  /* ------------------ COMING SOON COMPONENT ------------------ */
+  const ComingSoonPlaceholder = ({
+    message = "Coming Soon",
+    iconSize = 48,
+  }) => (
+    <div className="coming-soon-placeholder">
+      <QuestionCircleOutlined
+        style={{
+          fontSize: iconSize,
+          color: "#6B7280",
+          opacity: 0.5,
+        }}
+      />
+      <span className="coming-soon-text">{message}</span>
+    </div>
+  );
 
   /* ------------------ HELPERS ------------------ */
+
   const formatCurrency = (v) => {
-    if (!showValues) return "₦●●●●";
+    if (!showValues) return "$●●●●";
     const amount = v || 0;
-    return new Intl.NumberFormat("en-NG", {
+    const amountInDollars = amount / 100;
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "NGN",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amountInDollars);
+  };
+
+  const formatInvestCurrency = (v) => {
+    if (!showValues) return "$●●●●";
+    const amount = v || 0;
+    // const amountInDollars = amount / 100;
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -198,8 +270,7 @@ const Investments = () => {
   const formatCompactCurrency = (v) => {
     const amount = v || 0;
     if (amount >= 1000000) return `₦${(amount / 1000000).toFixed(1)}M`;
-    if (amount >= 1000) return `₦${(amount / 1000).toFixed(1)}K`;
-    return `₦${amount}`;
+    return `$${amount}`;
   };
 
   const formatPercentage = (v) => {
@@ -221,6 +292,7 @@ const Investments = () => {
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -305,28 +377,36 @@ const Investments = () => {
     }
   };
 
-  const calculateDaysLeft = (endDate) => {
-    if (!endDate) return 0;
-    const end = new Date(endDate);
-    const now = new Date();
-    const diffTime = end - now;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : 0;
+  const getDepositStatusIcon = (status) => {
+    switch (status?.toLowerCase()) {
+      case "confirmed":
+      case "completed":
+      case "success":
+        return <CheckCircleFilled style={{ color: "#10b981" }} />;
+      case "pending":
+        return <ClockCircleOutlined style={{ color: "#f59e0b" }} />;
+      case "failed":
+      case "cancelled":
+        return <CloseCircleOutlined style={{ color: "#ef4444" }} />;
+      default:
+        return <ClockCircleOutlined style={{ color: "#6b7280" }} />;
+    }
   };
 
-  const calculateProgress = (startDate, endDate) => {
-    if (!startDate || !endDate) return 0;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const now = new Date();
-
-    const totalDuration = end - start;
-    const elapsed = now - start;
-
-    if (elapsed <= 0) return 0;
-    if (elapsed >= totalDuration) return 100;
-
-    return Math.round((elapsed / totalDuration) * 100);
+  const getDepositStatusText = (status) => {
+    switch (status?.toLowerCase()) {
+      case "confirmed":
+      case "completed":
+      case "success":
+        return "Confirmed";
+      case "pending":
+        return "Pending";
+      case "failed":
+      case "cancelled":
+        return "Failed";
+      default:
+        return "Processing";
+    }
   };
 
   /* ------------------ CREATE INVESTMENT ------------------ */
@@ -353,29 +433,29 @@ const Investments = () => {
     try {
       setLoadingInvestment(true);
 
-      const newInvestment = {
-        _id: `inv-${Date.now()}`,
-        plan: plan.id,
-        investmentType: plan.id,
-        status: "active",
+      // Prepare data for API
+      const investmentData = {
         amount: value,
         roi: plan.roi,
-        totalReturns: 0,
-        currentValue: value,
-        startDate: startDate,
-        endDate: endDate,
-        createdAt: new Date().toISOString(),
+        investmentType: plan.id,
+        investmentStartDate: startDate,
+        investmentEndDate: endDate,
+        // userId:
+        //   dashboardData?.accountStatus?._id || localStorage.getItem("userId"),
       };
 
-      // In real app, you would send to API
-      // await ApiService.createInvestment(newInvestment);
+      
+      const result = await ApiService.invest(investmentData);
 
-      setInvestments((prev) => [newInvestment, ...prev]);
       setShowNewInvestmentModal(false);
       setSelectedPlan("");
       setError("");
+
+      // Show success message
+      setSuccess(true);
     } catch (err) {
-      setError("Failed to create investment. Please try again.");
+      // console.error("Investment creation error:", err);
+      setError(`${err}`);
     } finally {
       setLoadingInvestment(false);
     }
@@ -470,7 +550,7 @@ const Investments = () => {
                         <div className="plan-detail-item">
                           <span className="detail-label">Min Investment</span>
                           <span className="detail-value">
-                            {formatCurrency(plan.minAmount)}
+                            {formatInvestCurrency(plan.minAmount)}
                           </span>
                         </div>
                         <div className="plan-detail-item">
@@ -482,7 +562,7 @@ const Investments = () => {
                         <div className="plan-detail-item">
                           <span className="detail-label">Max Investment</span>
                           <span className="detail-value">
-                            {formatCurrency(plan.maxAmount)}
+                            {formatInvestCurrency(plan.maxAmount)}
                           </span>
                         </div>
                       </div>
@@ -501,10 +581,10 @@ const Investments = () => {
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder={`Enter amount between ${formatCurrency(
+                        placeholder={`Enter amount between ${formatInvestCurrency(
                           investmentPlans.find((p) => p.id === selectedPlan)
                             .minAmount
-                        )} and ${formatCurrency(
+                        )} and ${formatInvestCurrency(
                           investmentPlans.find((p) => p.id === selectedPlan)
                             .maxAmount
                         )}`}
@@ -576,7 +656,7 @@ const Investments = () => {
                       <div className="summary-item total">
                         <span>Total Investment:</span>
                         <span className="total-investment">
-                          {amount ? formatCurrency(parseFloat(amount)) : "₦0"}
+                          {amount ? formatInvestCurrency(parseFloat(amount)) : "$0"}
                         </span>
                       </div>
                     </div>
@@ -626,20 +706,6 @@ const Investments = () => {
       {/* Header */}
       <Header />
 
-      {useMockData && (
-        <div className="mock-data-banner">
-          <ExclamationCircleOutlined style={{ color: "#f59e0b" }} />
-          <span>Showing demo investment data</span>
-          <button
-            className="btn-retry"
-            onClick={fetchUserInvestments}
-            title="Retry connection"
-          >
-            <ReloadOutlined />
-          </button>
-        </div>
-      )}
-
       {/* Main Content */}
       <div className="investments-content">
         {/* Page Header */}
@@ -680,7 +746,9 @@ const Investments = () => {
             <div className="stat-content">
               <div className="stat-label">Total Invested</div>
               <div className="stat-value">
-                {formatCompactCurrency(userStats.totalInvested)}
+                {dashboardData?.wallet?.balance
+                  ? formatCompactCurrency(dashboardData.wallet.balance)
+                  : formatCompactCurrency(userStats.totalInvested)}
               </div>
               <div className="stat-details">
                 <span className="detail-label">Active Investments:</span>
@@ -696,13 +764,20 @@ const Investments = () => {
             <div className="stat-content">
               <div className="stat-label">Total Returns</div>
               <div className="stat-value">
-                {formatCompactCurrency(userStats.totalReturns)}
+                {dashboardData?.profits
+                  ? formatCompactCurrency(dashboardData.profits)
+                  : formatCompactCurrency(userStats.totalReturns)}
               </div>
               <div className="stat-details">
                 <span className="detail-label">All time</span>
                 <span className="detail-value positive">
                   <ArrowUpOutlined /> +
-                  {userStats.totalInvested > 0
+                  {dashboardData?.profits && dashboardData?.wallet?.balance
+                    ? (
+                        (dashboardData.profits / dashboardData.wallet.balance) *
+                        100
+                      ).toFixed(1)
+                    : userStats.totalInvested > 0
                     ? (
                         (userStats.totalReturns / userStats.totalInvested) *
                         100
@@ -721,13 +796,22 @@ const Investments = () => {
             <div className="stat-content">
               <div className="stat-label">Portfolio Value</div>
               <div className="stat-value">
-                {formatCompactCurrency(userStats.totalPortfolioValue)}
+                {dashboardData?.wallet?.balance && dashboardData?.profits
+                  ? formatCompactCurrency(
+                      dashboardData.wallet.balance + dashboardData.profits
+                    )
+                  : formatCompactCurrency(userStats.totalPortfolioValue)}
               </div>
               <div className="stat-details">
                 <span className="detail-label">Current Value</span>
                 <span className="detail-value positive">
                   <ArrowUpOutlined /> +
-                  {userStats.totalInvested > 0
+                  {dashboardData?.profits && dashboardData?.wallet?.balance
+                    ? (
+                        (dashboardData.profits / dashboardData.wallet.balance) *
+                        100
+                      ).toFixed(1)
+                    : userStats.totalInvested > 0
                     ? (
                         (userStats.totalReturns / userStats.totalInvested) *
                         100
@@ -764,7 +848,7 @@ const Investments = () => {
                 <BarChartOutlined className="panel-icon" />
                 <h3>My Investments</h3>
                 <span className="investment-count">
-                  {filteredInvestments.length} investments
+                  {investments.length} investments
                 </span>
               </div>
               <div className="panel-actions">
@@ -791,64 +875,6 @@ const Investments = () => {
               </div>
             </div>
 
-            <div className="filters-section">
-              <div className="filter-group-modern">
-                <FilterOutlined />
-                <span>Filter by Status</span>
-                <div className="filter-buttons-modern">
-                  <button
-                    className={`filter-btn ${
-                      filterStatus === "all" ? "active" : ""
-                    }`}
-                    onClick={() => setFilterStatus("all")}
-                  >
-                    All
-                  </button>
-                  <button
-                    className={`filter-btn ${
-                      filterStatus === "active" ? "active" : ""
-                    }`}
-                    onClick={() => setFilterStatus("active")}
-                  >
-                    Active
-                  </button>
-                  <button
-                    className={`filter-btn ${
-                      filterStatus === "completed" ? "active" : ""
-                    }`}
-                    onClick={() => setFilterStatus("completed")}
-                  >
-                    Completed
-                  </button>
-                </div>
-              </div>
-              <div className="filter-group-modern">
-                <FilterOutlined />
-                <span>Filter by Plan</span>
-                <div className="filter-buttons-modern">
-                  <button
-                    className={`filter-btn ${
-                      filterType === "all" ? "active" : ""
-                    }`}
-                    onClick={() => setFilterType("all")}
-                  >
-                    All
-                  </button>
-                  {["basic", "standard", "premium", "ultimate"].map((type) => (
-                    <button
-                      key={type}
-                      className={`filter-btn ${
-                        filterType === type ? "active" : ""
-                      }`}
-                      onClick={() => setFilterType(type)}
-                    >
-                      {getPlanName(type)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
             <div className="panel-content">
               {loading ? (
                 <div className="loading-state-modern">
@@ -859,16 +885,25 @@ const Investments = () => {
                   <p>Loading investments...</p>
                   <small>Getting your investment portfolio</small>
                 </div>
-              ) : filteredInvestments.length > 0 ? (
+              ) : investments.length === 0 ? (
+                <div className="coming-soon-state">
+                  <ComingSoonPlaceholder
+                    message="No investments yet. Start your first investment!"
+                    iconSize={64}
+                  />
+                  <div className="coming-soon-actions">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => setShowNewInvestmentModal(true)}
+                    >
+                      <PlusOutlined />
+                      Start Investing
+                    </button>
+                  </div>
+                </div>
+              ) : (
                 <div className="investments-grid-modern">
-                  {filteredInvestments.map((investment) => {
-                    const daysLeft = calculateDaysLeft(
-                      investment.endDate || investment.investmentEndDate
-                    );
-                    const progress = calculateProgress(
-                      investment.startDate || investment.investmentStartDate,
-                      investment.endDate || investment.investmentEndDate
-                    );
+                  {investments.map((investment) => {
                     const planType =
                       investment.plan || investment.investmentType;
                     const planColor = getTypeColor(planType);
@@ -925,11 +960,7 @@ const Investments = () => {
                                 Current Value
                               </span>
                               <span className="detail-value">
-                                {formatCurrency(
-                                  investment.currentValue ||
-                                    investment.amount +
-                                      (investment.totalReturns || 0)
-                                )}
+                                {formatCurrency(investment.currentValue)}
                               </span>
                             </div>
                             <div className="detail-item-modern">
@@ -949,63 +980,18 @@ const Investments = () => {
                             </div>
                             <div className="timeline-dates">
                               <span className="date">
-                                {formatDate(
-                                  investment.startDate ||
-                                    investment.investmentStartDate
-                                )}
+                                {formatDate(investment.startDate)}
                               </span>
                               <span className="date-separator">→</span>
                               <span className="date">
-                                {formatDate(
-                                  investment.endDate ||
-                                    investment.investmentEndDate
-                                )}
+                                {formatDate(investment.endDate)}
                               </span>
-                            </div>
-                            <div className="days-left">
-                              {daysLeft > 0
-                                ? `${daysLeft} days left`
-                                : "Completed"}
-                            </div>
-                          </div>
-
-                          <div className="progress-section-modern">
-                            <div className="progress-header">
-                              <span>Progress</span>
-                              <span>{progress}%</span>
-                            </div>
-                            <div className="progress-bar-modern">
-                              <div
-                                className="progress-fill"
-                                style={{
-                                  width: `${progress}%`,
-                                  backgroundColor: planColor,
-                                }}
-                              />
                             </div>
                           </div>
                         </div>
                       </div>
                     );
                   })}
-                </div>
-              ) : (
-                <div className="empty-state-modern">
-                  <WalletOutlined className="empty-icon" />
-                  <h4>No investments found</h4>
-                  <p>
-                    Start your investment journey by creating your first
-                    investment!
-                  </p>
-                  <div className="empty-actions">
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => setShowNewInvestmentModal(true)}
-                    >
-                      <PlusOutlined />
-                      Start Investing
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
@@ -1039,18 +1025,18 @@ const Investments = () => {
                   </div>
                 </div>
                 <div className="stat-item-modern">
-                  <div className="stat-icon-small cancelled">
-                    <CloseCircleOutlined />
+                  <div className="stat-icon-small total-deposits">
+                    <ArrowDownOutlined />
                   </div>
                   <div className="stat-content-small">
-                    <span className="stat-label-small">Cancelled</span>
+                    <span className="stat-label-small">Total Deposits</span>
                     <span className="stat-value-small">
-                      {userStats.cancelled}
+                      {userStats.totalDeposits}
                     </span>
                   </div>
                 </div>
                 <div className="stat-item-modern">
-                  <div className="stat-icon-small total">
+                  <div className="stat-icon-small total-investments">
                     <BarChartOutlined />
                   </div>
                   <div className="stat-content-small">
@@ -1061,6 +1047,56 @@ const Investments = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Recent Deposits Panel */}
+            <div className="recent-deposits-panel">
+              <div className="panel-header">
+                <h3>Recent Deposits</h3>
+                <span className="deposit-total">
+                  {formatCurrency(userStats.totalDepositAmount)}
+                </span>
+              </div>
+              {recentDeposits.length > 0 ? (
+                <div className="deposits-list">
+                  {recentDeposits.map((deposit, index) => (
+                    <div key={deposit._id || index} className="deposit-item">
+                      <div className="deposit-icon">
+                        <ArrowDownOutlined
+                          style={{
+                            color: "#10b981",
+                            fontSize: "16px",
+                          }}
+                        />
+                      </div>
+                      <div className="deposit-info">
+                        <div className="deposit-header">
+                          <span className="deposit-currency">
+                            {deposit.currency || "Crypto"}
+                          </span>
+                          <span className="deposit-status">
+                            {getDepositStatusIcon(deposit.status)}
+                            {getDepositStatusText(deposit.status)}
+                          </span>
+                        </div>
+                        <div className="deposit-footer">
+                          <span className="deposit-date">
+                            {formatDate(deposit.createdAt || deposit.date)}
+                          </span>
+                          <span className="deposit-amount">
+                            {formatCurrency(deposit.requestedAmount || 0)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <ComingSoonPlaceholder
+                  message="No deposit history"
+                  iconSize={32}
+                />
+              )}
             </div>
 
             <div className="tips-panel">
@@ -1085,91 +1121,22 @@ const Investments = () => {
             <ReloadOutlined />
             Refresh Data
           </button>
-          {useMockData && (
-            <div className="data-status">
-              <span className="status-indicator"></span>
-              <span>Demo data • Refreshed just now</span>
-            </div>
-          )}
         </div>
       </div>
 
       {/* New Investment Modal */}
       {showNewInvestmentModal && <NewInvestmentModal />}
 
+      {success && (
+        <div className="copy-notification">
+          Investment created successfully!
+        </div>
+      )}
+
       {/* Footer */}
       <Footer />
     </div>
   );
 };
-
-/* ------------------ MOCK DATA ------------------ */
-const mockInvestments = [
-  {
-    _id: "inv-001",
-    amount: 50000,
-    roi: 15,
-    plan: "basic",
-    investmentType: "basic",
-    status: "active",
-    totalReturns: 7500,
-    currentValue: 57500,
-    startDate: "2024-01-15",
-    endDate: "2024-02-15",
-    createdAt: "2024-01-15T14:30:00Z",
-  },
-  {
-    _id: "inv-002",
-    amount: 100000,
-    roi: 10,
-    plan: "standard",
-    investmentType: "standard",
-    status: "completed",
-    totalReturns: 10000,
-    currentValue: 110000,
-    startDate: "2024-01-10",
-    endDate: "2024-02-09",
-    createdAt: "2024-01-10T09:15:00Z",
-  },
-  {
-    _id: "inv-003",
-    amount: 200000,
-    roi: 25,
-    plan: "premium",
-    investmentType: "premium",
-    status: "active",
-    totalReturns: 50000,
-    currentValue: 250000,
-    startDate: "2024-01-20",
-    endDate: "2024-04-20",
-    createdAt: "2024-01-20T11:45:00Z",
-  },
-  {
-    _id: "inv-004",
-    amount: 30000,
-    roi: 18,
-    plan: "standard",
-    investmentType: "standard",
-    status: "cancelled",
-    totalReturns: 2700,
-    currentValue: 32700,
-    startDate: "2023-12-05",
-    endDate: "2024-01-03",
-    createdAt: "2023-12-05T16:20:00Z",
-  },
-  {
-    _id: "inv-005",
-    amount: 500000,
-    roi: 30,
-    plan: "ultimate",
-    investmentType: "ultimate",
-    status: "active",
-    totalReturns: 150000,
-    currentValue: 650000,
-    startDate: "2024-01-01",
-    endDate: "2024-04-01",
-    createdAt: "2024-01-01T00:00:00Z",
-  },
-];
 
 export default Investments;
