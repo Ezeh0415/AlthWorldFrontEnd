@@ -144,9 +144,9 @@ const Login = () => {
       const token = responseData.token || responseData.accessToken;
 
       // Store authentication data
-      
+
       if (token) {
-        localStorage.setItem("userToken", token);
+        localStorage.setItem("token", token);
       }
 
       // Store user data

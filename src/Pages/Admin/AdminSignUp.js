@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   EyeOutlined,
   EyeInvisibleOutlined,
@@ -7,17 +7,18 @@ import {
   UserOutlined,
   LoadingOutlined,
   CheckCircleOutlined,
-  SafetyCertificateOutlined
-} from '@ant-design/icons';
-import '../../styles/Admin/AdminSignUp.css';
-import { Link } from 'react-router-dom';
+  SafetyCertificateOutlined,
+} from "@ant-design/icons";
+import "../../styles/Admin/AdminSignUp.css";
+import { Link } from "react-router-dom";
+import ApiService from "../../Commponets/ApiService";
 
 const AdminSignUp = () => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: ''
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -29,43 +30,43 @@ const AdminSignUp = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors({
         ...errors,
-        [name]: ''
+        [name]: "",
       });
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     // Check required fields
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+      newErrors.firstName = "First name is required";
     }
-    
+
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+      newErrors.lastName = "Last name is required";
     }
-    
+
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
-        newErrors.email = 'Please enter a valid email address';
+        newErrors.email = "Please enter a valid email address";
       }
     }
-    
+
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+      newErrors.password = "Password must be at least 8 characters";
     }
 
     setErrors(newErrors);
@@ -74,44 +75,53 @@ const AdminSignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
-    
+
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       // Log form data to console
-      console.log('🔐 ADMIN SIGNUP SUBMITTED:', {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+      const data = {
+        fullName: formData.firstName,
+        userName: formData.lastName,
         email: formData.email,
-        password: '***HIDDEN***',
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent
-      });
-      
+        password: formData.password,
+      };
+
+      const response = await ApiService.AdminSignUp(data);
+
+      if (!response.ok) {
+        setErrors({ submit: "Failed to create account. Please try again." });
+      }
+
+      localStorage.setItem("AdminToken",response.accessToken);
+      localStorage.setItem("isAdmin",response.data.role);
+
+      // Log response data to console
+      console.log("Signup response:", response);
+
       // Show success message
       setSuccess(true);
-      
+
       // Reset form after 3 seconds
       setTimeout(() => {
         setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          password: ''
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
         });
         setSuccess(false);
       }, 3000);
-      
     } catch (error) {
-      console.error('Signup error:', error);
-      setErrors({ submit: 'Failed to create account. Please try again.' });
+      console.error("Signup error:", error);
+      setErrors({ submit: "Failed to create account. Please try again." });
     } finally {
       setLoading(false);
     }
@@ -168,10 +178,12 @@ const AdminSignUp = () => {
                 value={formData.firstName}
                 onChange={handleChange}
                 placeholder="Enter first name"
-                className={errors.firstName ? 'error' : ''}
+                className={errors.firstName ? "error" : ""}
                 disabled={loading}
               />
-              {errors.firstName && <span className="error-message">{errors.firstName}</span>}
+              {errors.firstName && (
+                <span className="error-message">{errors.firstName}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -187,10 +199,12 @@ const AdminSignUp = () => {
                 value={formData.lastName}
                 onChange={handleChange}
                 placeholder="Enter last name"
-                className={errors.lastName ? 'error' : ''}
+                className={errors.lastName ? "error" : ""}
                 disabled={loading}
               />
-              {errors.lastName && <span className="error-message">{errors.lastName}</span>}
+              {errors.lastName && (
+                <span className="error-message">{errors.lastName}</span>
+              )}
             </div>
           </div>
 
@@ -207,10 +221,12 @@ const AdminSignUp = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="admin@example.com"
-              className={errors.email ? 'error' : ''}
+              className={errors.email ? "error" : ""}
               disabled={loading}
             />
-            {errors.email && <span className="error-message">{errors.email}</span>}
+            {errors.email && (
+              <span className="error-message">{errors.email}</span>
+            )}
           </div>
 
           <div className="form-group">
@@ -221,13 +237,13 @@ const AdminSignUp = () => {
             </label>
             <div className="password-input-wrapper">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Enter password (min 8 characters)"
-                className={errors.password ? 'error' : ''}
+                className={errors.password ? "error" : ""}
                 disabled={loading}
               />
               <button
@@ -239,32 +255,28 @@ const AdminSignUp = () => {
                 {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
               </button>
             </div>
-            {errors.password && <span className="error-message">{errors.password}</span>}
+            {errors.password && (
+              <span className="error-message">{errors.password}</span>
+            )}
           </div>
 
           <div className="form-footer">
-            <button
-              type="submit"
-              className="submit-btn"
-              disabled={loading}
-            >
+            <button type="submit" className="submit-btn" disabled={loading}>
               {loading ? (
                 <>
                   <LoadingOutlined spin />
                   Creating Account...
                 </>
               ) : (
-                'Create Admin Account'
+                "Create Admin Account"
               )}
             </button>
-            
+
             <div className="signin-link">
               Already have an account? <Link to="/AdminLogin">Sign In</Link>
             </div>
           </div>
         </form>
-
-        
       </div>
     </div>
   );

@@ -1,11 +1,13 @@
 import { Navigate } from "react-router-dom";
+import ApiService from "./ApiService";
 
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("userToken");
+  const apiServiceAuth = ApiService.isAuthenticated();
 
-  if (!isAuthenticated) {
+  if (!apiServiceAuth) {
     return <Navigate to="/login" replace />;
   }
+
 
   return children;
 };

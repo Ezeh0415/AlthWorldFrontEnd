@@ -10,6 +10,8 @@ import ProtectedRoute from "./Commponets/ProtectedRoute";
 import Deposit from "./Pages/Deposit";
 import AdminSignUp from "./Pages/Admin/AdminSignUp";
 import AdminLogin from "./Pages/Admin/AdminLogin";
+import AdminHomePage from "./Pages/Admin/AdminHomePage";
+import AdminTransaction from "./Pages/Admin/AdminTransaction";
 
 function App() {
   return (
@@ -62,6 +64,25 @@ function App() {
           element={
             <ProtectedRoute>
               <Deposit />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* admin Routes */}
+        <Route
+          path="/adminHomePage"
+          element={
+            <ProtectedRoute>
+              <AdminHomePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/adminTransactions"
+          element={
+            <ProtectedRoute>
+              <AdminTransaction />
             </ProtectedRoute>
           }
         />

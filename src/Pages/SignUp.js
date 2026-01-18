@@ -171,10 +171,10 @@ const Signup = () => {
 
       // ✅ parse response body
       const data = await response.json();
-      localStorage.setItem("userToken", data.accessToken);
+      localStorage.setItem("token", data.accessToken);
       localStorage.setItem("user", JSON.stringify(data.data));
 
-      Navigate("/")
+      Navigate("/");
       // Reset form on success
       setFormData({
         firstName: "",

@@ -703,3 +703,533 @@
     gap: 0.75rem;
   }
 }
+
+/* exra css */
+/* ===== DASHBOARD MAIN CONTENT ===== */
+.dashboard__main-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .dashboard__main-content {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* ===== DASHBOARD PANEL BASE ===== */
+.dashboard__panel {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.dashboard__panel:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== PANEL HEADER ===== */
+.dashboard__panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dashboard__panel-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard__panel-icon {
+  font-size: 18px;
+  color: #6b7280;
+}
+
+.dashboard__panel-heading {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.dashboard__panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.dashboard__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.dashboard__action-btn--view-all {
+  background: #f3f4f6;
+  color: #4b5563;
+  border-color: #d1d5db;
+}
+
+.dashboard__action-btn--view-all:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.dashboard__action-btn--filter {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  background: #f3f4f6;
+  color: #4b5563;
+  border-color: #d1d5db;
+}
+
+.dashboard__action-btn--filter:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.dashboard__filter-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== PANEL CONTENT ===== */
+.dashboard__panel-content {
+  padding: 24px;
+}
+
+/* ===== EMPTY STATE ===== */
+.dashboard__empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.dashboard__empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.dashboard__empty-svg {
+  font-size: 28px;
+  color: #0ea5e9;
+}
+
+.dashboard__empty-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.dashboard__empty-description {
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  color: #6b7280;
+  max-width: 300px;
+}
+
+/* ===== BUTTONS ===== */
+.dashboard__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.dashboard__btn--primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+}
+
+.dashboard__btn--primary:hover {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.dashboard__btn--small {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+/* ===== TRANSACTIONS LIST ===== */
+.dashboard__transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard__transaction-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f9fafb;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.dashboard__transaction-item:hover {
+  background: white;
+  border-color: #e5e7eb;
+  transform: translateX(4px);
+}
+
+.dashboard__transaction-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+}
+
+.dashboard__transaction-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.dashboard__transaction-title {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard__transaction-date {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.dashboard__transaction-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dashboard__transaction-amount {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dashboard__transaction-amount--positive {
+  color: #059669;
+}
+
+.dashboard__transaction-amount--negative {
+  color: #dc2626;
+}
+
+/* ===== QUICK ACTIONS PANEL ===== */
+.dashboard__panel--quick-actions {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border-color: #334155;
+  color: white;
+}
+
+.dashboard__panel--quick-actions .dashboard__panel-heading,
+.dashboard__panel--quick-actions .dashboard__panel-icon {
+  color: white;
+}
+
+.dashboard__panel--quick-actions .dashboard__panel-header {
+  border-bottom-color: #334155;
+}
+
+.dashboard__actions-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .dashboard__actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard__actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard__actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ===== ACTION CARDS ===== */
+.dashboard__action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dashboard__action-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dashboard__action-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.dashboard__action-icon-wrapper--deposit {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.2),
+    rgba(34, 197, 94, 0.1)
+  );
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.dashboard__action-icon-wrapper--invest {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.2),
+    rgba(59, 130, 246, 0.1)
+  );
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.dashboard__action-icon-wrapper--withdraw {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.2),
+    rgba(245, 158, 11, 0.1)
+  );
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.dashboard__action-icon-wrapper--referral {
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.2),
+    rgba(168, 85, 247, 0.1)
+  );
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.dashboard__action-icon {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.dashboard__action-content {
+  flex: 1;
+}
+
+.dashboard__action-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+}
+
+.dashboard__action-description {
+  margin: 0;
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+/* ===== SPECIFIC ACTION CARD COLORS ===== */
+.dashboard__action-card--deposit:hover
+  .dashboard__action-icon-wrapper--deposit {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  transform: scale(1.05);
+}
+
+.dashboard__action-card--invest:hover .dashboard__action-icon-wrapper--invest {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  transform: scale(1.05);
+}
+
+.dashboard__action-card--withdraw:hover
+  .dashboard__action-icon-wrapper--withdraw {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  transform: scale(1.05);
+}
+
+.dashboard__action-card--referral:hover
+  .dashboard__action-icon-wrapper--referral {
+  background: linear-gradient(135deg, #a855f7, #9333ea);
+  transform: scale(1.05);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Mobile (up to 640px) */
+@media (max-width: 640px) {
+  .dashboard__panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .dashboard__panel-content {
+    padding: 16px;
+  }
+
+  .dashboard__transaction-item {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .dashboard__transaction-icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .dashboard__action-card {
+    padding: 16px;
+  }
+
+  .dashboard__action-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+  }
+}
+
+/* Tablet (641px to 1024px) */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .dashboard__main-content {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard__panel--quick-actions {
+    margin-top: 0;
+  }
+
+  .dashboard__actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop (1025px and above) */
+@media (min-width: 1025px) {
+  .dashboard__main-content {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard__panel {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.dashboard__transaction-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+@media (prefers-color-scheme: dark) {
+  .dashboard__panel:not(.dashboard__panel--quick-actions) {
+    background: #1f2937;
+    border-color: #374151;
+  }
+
+  .dashboard__panel-heading {
+    color: #f9fafb;
+  }
+
+  .dashboard__empty-icon {
+    background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  }
+
+  .dashboard__empty-title {
+    color: #f9fafb;
+  }
+
+  .dashboard__empty-description {
+    color: #d1d5db;
+  }
+
+  .dashboard__transaction-item {
+    background: #374151;
+  }
+
+  .dashboard__transaction-item:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+  }
+
+  .dashboard__transaction-title {
+    color: #f9fafb;
+  }
+
+  .dashboard__transaction-date {
+    color: #9ca3af;
+  }
+}

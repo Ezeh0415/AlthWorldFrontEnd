@@ -13,6 +13,10 @@ import {
   ExclamationCircleOutlined,
   PlusCircleOutlined,
   SwapOutlined,
+  DollarOutlined,
+  ExportOutlined,
+  ArrowRightOutlined,
+  CaretDownOutlined,
 } from "@ant-design/icons";
 import "../styles/Wallet.css";
 import Header from "../Commponets/Header";
@@ -32,8 +36,9 @@ const Wallet = () => {
   });
   const [transactions, setTransactions] = useState([]);
   const [useMockData, setUseMockData] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
 
-  // Mock exchange rates
+  // Exchange rates
   const exchangeRates = {
     USD: 1,
     EUR: 0.92,
@@ -141,8 +146,8 @@ const Wallet = () => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amountInDollars);
   };
 
@@ -153,11 +158,26 @@ const Wallet = () => {
       case "withdrawal":
         return <ArrowUpOutlined className="withdrawal-icon" />;
       case "profit":
-        return <PlusCircleOutlined className="profit-icon" />;
+        return <PlusCircleOutlined className="interest-icon" />;
       case "investment":
-        return <SwapOutlined className="investment-icon" />;
+        return <SwapOutlined className="transfer-icon" />;
       default:
         return <WalletOutlined className="default-icon" />;
+    }
+  };
+
+  const getTransactionIconClass = (type) => {
+    switch (type) {
+      case "deposit":
+        return "deposit";
+      case "withdrawal":
+        return "withdrawal";
+      case "profit":
+        return "interest";
+      case "investment":
+        return "transfer";
+      default:
+        return "default";
     }
   };
 
@@ -166,14 +186,14 @@ const Wallet = () => {
       case "completed":
       case "success":
         return (
-          <span className="status-badge completed">
+          <span className="transaction-status status-completed">
             <CheckCircleOutlined />
             Completed
           </span>
         );
       case "pending":
         return (
-          <span className="status-badge pending">
+          <span className="transaction-status status-pending">
             <ClockCircleOutlined />
             Pending
           </span>
@@ -181,14 +201,14 @@ const Wallet = () => {
       case "processing":
       case "active":
         return (
-          <span className="status-badge processing">
+          <span className="transaction-status status-pending">
             <LoadingOutlined />
             Processing
           </span>
         );
       default:
         return (
-          <span className="status-badge unknown">
+          <span className="transaction-status status-pending">
             <ClockCircleOutlined />
             {status || "Unknown"}
           </span>
@@ -221,9 +241,12 @@ const Wallet = () => {
     window.location.href = "/withdraw";
   };
 
-  const handleExportHistory = () => {
-    // Implement export functionality
-    console.log("Export transaction history");
+  const handleTransfer = () => {
+    console.log("Transfer initiated");
+  };
+
+  const handleViewHistory = () => {
+    console.log("View transaction history");
   };
 
   if (loading) {
@@ -231,7 +254,7 @@ const Wallet = () => {
       <div className="wallet-container">
         <Header />
         <div className="loading-container">
-          <LoadingOutlined style={{ fontSize: 48, color: "#3b82f6" }} spin />
+          <div className="loading-spinner"></div>
           <p>Loading wallet data...</p>
           <small>Getting your financial information</small>
         </div>
@@ -245,8 +268,8 @@ const Wallet = () => {
 
       {error && useMockData && (
         <div className="mock-data-banner">
-          <ExclamationCircleOutlined style={{ color: "#f59e0b" }} />
-          <span>Showing demo data</span>
+          <ExclamationCircleOutlined style={{ color: "#92400e" }} />
+          <span>Showing demo data. Real-time connection failed.</span>
           <button
             className="btn-retry"
             onClick={fetchWalletData}
@@ -258,113 +281,205 @@ const Wallet = () => {
       )}
 
       <div className="wallet-main">
-        {/* Hero Balance Card */}
-        <div className="wallet-hero-section">
+        {/* Hero Balance Section */}
+        <div className="hero-balance-section">
           <div className="hero-balance-card">
+            {/* Hero Header */}
             <div className="hero-header">
               <div className="hero-title">
-                <WalletOutlined className="hero-icon" />
-                <div>
-                  <h3>Total Wallet Balance</h3>
-                  <p>Your available funds</p>
+                <div className="hero-icon-container">
+                  <WalletOutlined className="hero-icon" />
+                </div>
+                <div className="hero-text">
+                  <h2>Wallet Balance</h2>
+                  <p>Your total available funds and investment portfolio</p>
                 </div>
               </div>
-              <div className="hero-actions">
+
+              <div className="hero-controls">
                 <button
-                  className="visibility-toggle hero-toggle"
+                  className="visibility-toggle"
                   onClick={() => setBalanceVisible(!balanceVisible)}
                   aria-label={balanceVisible ? "Hide balance" : "Show balance"}
+                  title={balanceVisible ? "Hide balance" : "Show balance"}
                 >
                   {balanceVisible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
                 </button>
-                <div className="currency-selector hero-selector">
+
+                <div className="currency-selector">
+                  {/* <span className="currency-icon">
+                    <DollarOutlined />
+                  </span> */}
                   {/* <select
-                    className="currency-select hero-select"
+                    className="currency-select"
                     value={selectedCurrency}
                     onChange={(e) => setSelectedCurrency(e.target.value)}
                   >
-                    {currencyOptions.map((currency) => (
-                      <option key={currency} value={currency}>
-                        {currency}
-                      </option>
-                    ))}
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="NGN">NGN</option>
                   </select> */}
                 </div>
               </div>
             </div>
 
-            <div className="hero-balance-content">
+            {/* Balance Display */}
+            <div className="balance-display">
               {balanceVisible ? (
-                <>
-                  <div className="hero-amount">
+                <div className="balance-visible">
+                  <div className="balance-amount">
                     {formatCurrency(walletData.balance)}
                   </div>
-                  <div className="hero-details">
-                    <div className="detail-item">
-                      <span className="detail-label">Available:</span>
-                      <span className="detail-value available">
-                        {formatCurrency(walletData.balance)}
-                      </span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Pending:</span>
-                      <span className="detail-value pending">
-                        {formatCurrency(walletData.pending)}
-                      </span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Invested:</span>
-                      <span className="detail-value invested">
-                        {formatCurrency(walletData.invBalance)}
-                      </span>
-                    </div>
-                  </div>
-                </>
+                  <p className="balance-converted">
+                    ≈ {formatCurrency(walletData.balance * 0.85)} in EUR
+                  </p>
+                </div>
               ) : (
                 <div className="balance-hidden">
-                  <div className="hidden-amount">●●●●●●●●</div>
-                  <small>Balance hidden</small>
+                  <div className="hidden-balance">●●●●●●●●●●</div>
+                  <p>Balance hidden for privacy</p>
                 </div>
               )}
             </div>
 
-            <div className="hero-action-buttons">
-              <button
-                className="action-btn deposit-hero"
-                onClick={handleDeposit}
-              >
-                <ArrowDownOutlined />
-                <div>
-                  <span className="action-title">Deposit</span>
-                  <span className="action-subtitle">Add funds</span>
+            {/* Balance Metrics */}
+            <div className="balance-metrics">
+              <div className="metric-card">
+                <div className="metric-header">
+                  <div
+                    className="metric-icon"
+                    style={{
+                      background: "rgba(56, 178, 172, 0.1)",
+                      color: "#38b2ac",
+                    }}
+                  >
+                    <ArrowDownOutlined />
+                  </div>
+                  <span className="metric-title">Available</span>
                 </div>
+                <div className="metric-value available">
+                  {formatCurrency(walletData.balance)}
+                </div>
+                <div className="metric-change positive">
+                  +{formatCurrency(walletData.balance * 0.85)}
+                  <span>this month</span>
+                </div>
+              </div>
+
+              <div className="metric-card">
+                <div className="metric-header">
+                  <div
+                    className="metric-icon"
+                    style={{
+                      background: "rgba(66, 153, 225, 0.1)",
+                      color: "#4299e1",
+                    }}
+                  >
+                    <SwapOutlined />
+                  </div>
+                  <span className="metric-title">Invested</span>
+                </div>
+                <div className="metric-value invested">
+                  {formatCurrency(walletData.invBalance)}
+                </div>
+                <div className="metric-change positive">
+                  +{formatCurrency(walletData.invBalance)}
+                  <span>active</span>
+                </div>
+              </div>
+
+              <div className="metric-card">
+                <div className="metric-header">
+                  <div
+                    className="metric-icon"
+                    style={{
+                      background: "rgba(237, 137, 54, 0.1)",
+                      color: "#ed8936",
+                    }}
+                  >
+                    <ClockCircleOutlined />
+                  </div>
+                  <span className="metric-title">Pending</span>
+                </div>
+                <div className="metric-value pending">
+                  {formatCurrency(walletData.pending)}
+                </div>
+                <div className="metric-change">
+                  <span>2 transactions</span>
+                </div>
+              </div>
+
+              <div className="metric-card">
+                <div className="metric-header">
+                  <div
+                    className="metric-icon"
+                    style={{
+                      background: "rgba(159, 122, 234, 0.1)",
+                      color: "#9f7aea",
+                    }}
+                  >
+                    <WalletOutlined />
+                  </div>
+                  <span className="metric-title">Reserved</span>
+                </div>
+                <div className="metric-value reserved">
+                  {formatCurrency(1500)}
+                </div>
+                <div className="metric-change">
+                  <span>for withdrawals</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="action-buttons">
+              <button className="action-button deposit" onClick={handleDeposit}>
+                <div className="action-icon">
+                  <ArrowDownOutlined />
+                </div>
+                <span className="action-title">Deposit</span>
+                <span className="action-description">Add funds to wallet</span>
               </button>
+
               <button
-                className="action-btn withdraw-hero"
+                className="action-button withdraw"
                 onClick={handleWithdraw}
               >
-                <ArrowUpOutlined />
-                <div>
-                  <span className="action-title">Withdraw</span>
-                  <span className="action-subtitle">Cash out</span>
+                <div className="action-icon">
+                  <ArrowUpOutlined />
                 </div>
+                <span className="action-title">Withdraw</span>
+                <span className="action-description">Cash out funds</span>
               </button>
+
               <button
-                className="action-btn export-hero"
-                onClick={handleExportHistory}
+                className="action-button transfer"
+                onClick={handleTransfer}
               >
-                <HistoryOutlined />
-                <div>
-                  <span className="action-title">Export</span>
-                  <span className="action-subtitle">Get history</span>
+                <div className="action-icon">
+                  <SwapOutlined />
                 </div>
+                <span className="action-title">Transfer</span>
+                <span className="action-description">Send to others</span>
+              </button>
+
+              <button
+                className="action-button history"
+                onClick={handleViewHistory}
+              >
+                <div className="action-icon">
+                  <HistoryOutlined />
+                </div>
+                <span className="action-title">History</span>
+                <span className="action-description">View transactions</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="wallet-content-grid">
+        {/* Main Content Grid */}
+        <div className="wallet-content">
           {/* Transactions Panel */}
           <div className="transactions-panel">
             <div className="panel-header">
@@ -375,67 +490,70 @@ const Wallet = () => {
                   {transactions.length} transactions
                 </span>
               </div>
-              <button className="btn-view-all">
+              <button className="view-all">
                 View All
-                <ArrowUpOutlined
-                  style={{ transform: "rotate(45deg)", marginLeft: "4px" }}
-                />
+                <ArrowRightOutlined />
               </button>
             </div>
 
             <div className="transactions-list">
               {transactions.length === 0 ? (
-                <div className="empty-transactions">
+                <div className="empty-state">
                   <WalletOutlined className="empty-icon" />
                   <h4>No transactions yet</h4>
-                  <p>Make your first deposit to get started</p>
-                  <button className="btn-deposit-cta" onClick={handleDeposit}>
+                  <p>Make your first deposit to get started with investments</p>
+                  <button className="primary-button" onClick={handleDeposit}>
                     Make First Deposit
                   </button>
                 </div>
               ) : (
                 transactions.slice(0, 5).map((transaction) => (
-                  <div
-                    key={transaction._id}
-                    className="transaction-item-modern"
-                  >
-                    <div className="transaction-icon-container">
+                  <div key={transaction._id} className="transaction-item">
+                    <div
+                      className={`transaction-icon ${getTransactionIconClass(transaction.type)}`}
+                    >
                       {getTransactionIcon(transaction.type)}
                     </div>
-                    <div className="transaction-content">
-                      <div className="transaction-info">
-                        <h4 className="transaction-title">
-                          {transaction.description ||
-                            (transaction.type === "deposit"
-                              ? "Deposit"
-                              : transaction.type === "withdrawal"
+                    <div className="transaction-details">
+                      <h4 className="transaction-description">
+                        {transaction.description ||
+                          (transaction.type === "deposit"
+                            ? "Deposit"
+                            : transaction.type === "withdrawal"
                               ? "Withdrawal"
                               : transaction.type === "investment"
-                              ? "Investment"
-                              : transaction.type === "profit"
-                              ? "Profit Earnings"
-                              : "Transaction")}
-                        </h4>
+                                ? "Investment"
+                                : transaction.type === "profit"
+                                  ? "Profit Earnings"
+                                  : "Transaction")}
+                      </h4>
+                      <div className="transaction-meta">
                         <p className="transaction-date">
                           {formatDate(transaction.createdAt)}
                         </p>
+                        {transaction._id && (
+                          <span className="transaction-id">
+                            #{transaction._id.slice(-6)}
+                          </span>
+                        )}
                       </div>
-                      <div className="transaction-amount-info">
-                        <span
-                          className={`amount ${
-                            transaction.amount >= 0 ? "positive" : "negative"
-                          }`}
-                        >
-                          {transaction.amount >= 0 ? "+" : "-"}
-                          {formatCurrency(
-                            Math.abs(
-                              transaction.requestedAmount ||
-                                transaction.creditedAmount
-                            )
-                          )}
-                        </span>
-                        {getStatusBadge(transaction.status)}
-                      </div>
+                    </div>
+                    <div className="transaction-amount">
+                      <span
+                        className={`amount ${
+                          transaction.amount >= 0 ? "positive" : "negative"
+                        }`}
+                      >
+                        {transaction.amount >= 0 ? "+" : "-"}
+                        {formatCurrency(
+                          Math.abs(
+                            transaction.requestedAmount ||
+                              transaction.creditedAmount ||
+                              transaction.amount,
+                          ),
+                        )}
+                      </span>
+                      {getStatusBadge(transaction.status)}
                     </div>
                   </div>
                 ))
@@ -443,97 +561,85 @@ const Wallet = () => {
             </div>
           </div>
 
-          {/* Balance Summary Panel */}
+          {/* Summary Panel */}
           <div className="summary-panel">
             <div className="panel-header">
-              <h3>Balance Summary</h3>
-            </div>
-
-            <div className="summary-grid">
-              <div className="summary-card">
-                <div className="summary-icon total-deposits">
-                  <ArrowDownOutlined />
-                </div>
-                <div className="summary-content">
-                  <span className="summary-label">Total Deposits</span>
-                  <span className="summary-value positive">
-                    {formatCurrency(walletData.totalDeposits)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="summary-card">
-                <div className="summary-icon total-withdrawals">
-                  <ArrowUpOutlined />
-                </div>
-                <div className="summary-content">
-                  <span className="summary-label">Total Withdrawals</span>
-                  <span className="summary-value negative">
-                    {formatCurrency(walletData.totalWithdrawals)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="summary-card">
-                <div className="summary-icon total-profits">
-                  <PlusCircleOutlined />
-                </div>
-                <div className="summary-content">
-                  <span className="summary-label">Total Profits</span>
-                  <span className="summary-value positive">
-                    {formatCurrency(walletData.totalProfits)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="summary-card">
-                <div className="summary-icon total-pending">
-                  <ClockCircleOutlined />
-                </div>
-                <div className="summary-content">
-                  <span className="summary-label">Pending Balance</span>
-                  <span className="summary-value pending">
-                    {formatCurrency(walletData.pending)}
-                  </span>
-                </div>
-              </div>
+              <h3>Financial Summary</h3>
             </div>
 
             <div className="summary-stats">
-              <div className="stat-item">
-                <span className="stat-label">Available Balance</span>
-                <span className="stat-value available">
-                  {formatCurrency(walletData.balance)}
+              <div className="summary-stat">
+                <span className="stat-label">Total Deposits</span>
+                <span className="stat-value positive">
+                  {formatCurrency(walletData.totalDeposits)}
                 </span>
               </div>
-              <div className="stat-item">
-                <span className="stat-label">Invested Amount</span>
-                <span className="stat-value invested">
-                  {formatCurrency(walletData.invBalance)}
+
+              <div className="summary-stat">
+                <span className="stat-label">Total Withdrawals</span>
+                <span className="stat-value negative">
+                  {formatCurrency(walletData.totalWithdrawals)}
                 </span>
               </div>
-              <div className="stat-item">
-                <span className="stat-label">Net Worth</span>
-                <span className="stat-value net-worth">
-                  {formatCurrency(walletData.balance + walletData.invBalance)}
+
+              <div className="summary-stat">
+                <span className="stat-label">Net Profit</span>
+                <span className="stat-value positive">
+                  {formatCurrency(walletData.totalProfits)}
+                </span>
+              </div>
+
+              <div className="summary-stat">
+                <span className="stat-label">Pending Balance</span>
+                <span className="stat-value neutral">
+                  {formatCurrency(walletData.pending)}
+                </span>
+              </div>
+            </div>
+
+            <div className="quick-insights">
+              <h4 className="insights-title">Quick Insights</h4>
+              <div className="insight-item">
+                <div className="insight-icon positive">
+                  <ArrowUpOutlined />
+                </div>
+                <span className="insight-text">
+                  Your net worth increased by 12% this month
+                </span>
+              </div>
+              <div className="insight-item">
+                <div className="insight-icon info">
+                  <ClockCircleOutlined />
+                </div>
+                <span className="insight-text">
+                  {transactions.filter((t) => t.status === "pending").length}{" "}
+                  pending transactions
+                </span>
+              </div>
+              <div className="insight-item">
+                <div className="insight-icon warning">
+                  <ExclamationCircleOutlined />
+                </div>
+                <span className="insight-text">
+                  Consider diversifying your investment portfolio
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Footer Actions */}
+        {/* Footer */}
         <div className="wallet-footer">
-          <button className="btn-refresh" onClick={fetchWalletData}>
+          <button className="refresh-button" onClick={fetchWalletData}>
             <ReloadOutlined />
             Refresh Data
           </button>
-          {useMockData && (
-            <div className="data-status">
-              <span className="status-indicator"></span>
-              <span>Demo data • Refreshed just now</span>
-            </div>
-          )}
+          <div className="last-updated">
+            <span className="status-indicator"></span>
+            <span>
+              {useMockData ? "Demo data" : "Live data"} • Updated just now
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -9,9 +9,11 @@ import {
   SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import "../../styles/Admin/AdminSignUp.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import ApiService from "../../Commponets/ApiService";
 
 const AdminLogin = () => {
+  const Navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -73,12 +75,14 @@ const AdminLogin = () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Log form data to console
-      console.log("🔐 ADMIN LOGIN SUBMITTED:", {
+      const LoginData = {
         email: formData.email,
-        password: "***HIDDEN***",
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-      });
+        password: formData.password,
+      };
+
+      await ApiService.login(LoginData);
+
+      Navigate("/adminHomePage");
 
       // Show success message
       setSuccess(true);
@@ -216,8 +220,6 @@ const AdminLogin = () => {
             </div>
           </div>
         </form>
-
-        
       </div>
     </div>
   );

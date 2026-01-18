@@ -4,7 +4,6 @@ import {
   CheckOutlined,
   QrcodeOutlined,
   ArrowLeftOutlined,
-  DollarOutlined,
   SecurityScanOutlined,
   LoadingOutlined,
 } from "@ant-design/icons";
@@ -124,17 +123,16 @@ const Deposit = () => {
         paymentType,
       };
 
-
       const result = await ApiService.Deposit(depositData);
 
-      console.log("sent",result)
+      console.log("sent", result);
 
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Find selected wallet from paymentMethods
       const selectedWallet = getPaymentMethods().find(
-        (method) => method.id === paymentType
+        (method) => method.id === paymentType,
       );
 
       if (!selectedWallet) {
@@ -179,12 +177,12 @@ const Deposit = () => {
 
     // Generate Google Charts QR code URL
     const googleQRCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(
-      qrData
+      qrData,
     )}&choe=UTF-8&chld=H|0`;
 
     // Alternative: QRServer API (free)
     const qrServerUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-      qrData
+      qrData,
     )}&margin=10`;
 
     return (
@@ -238,11 +236,6 @@ const Deposit = () => {
           <ArrowLeftOutlined />
           Back
         </Link>
-        <h1 className="deposit-title">
-          <DollarOutlined className="title-icon" />
-          Deposit Funds
-        </h1>
-        <p className="deposit-subtitle">Add funds to your account securely</p>
       </div>
 
       {/* Error Message */}

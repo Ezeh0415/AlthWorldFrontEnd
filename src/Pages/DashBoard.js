@@ -94,17 +94,17 @@ const Dashboard = () => {
 
   const calculateStats = (data) => {
     const activeInvestments = data.investments.filter(
-      (inv) => inv.status === "active" || inv.status === "running"
+      (inv) => inv.status === "active" || inv.status === "running",
     ).length;
 
     const completedInvestments = data.investments.filter(
-      (inv) => inv.status === "completed" || inv.status === "ended"
+      (inv) => inv.status === "completed" || inv.status === "ended",
     ).length;
 
     // Calculate total investments
     const totalInvestments = data.investments.reduce(
       (sum, inv) => sum + (inv.amount || inv.investedAmount || 0),
-      0
+      0,
     );
 
     // Mock growth calculations (replace with real calculations when available)
@@ -149,7 +149,7 @@ const Dashboard = () => {
           amount: 50000,
           status: "success",
           createdAt: new Date(
-            Date.now() - 2 * 24 * 60 * 60 * 1000
+            Date.now() - 2 * 24 * 60 * 60 * 1000,
           ).toISOString(),
           description: "Bank Transfer",
         },
@@ -159,7 +159,7 @@ const Dashboard = () => {
           amount: 30000,
           status: "active",
           createdAt: new Date(
-            Date.now() - 5 * 24 * 60 * 60 * 1000
+            Date.now() - 5 * 24 * 60 * 60 * 1000,
           ).toISOString(),
           description: "Starter Plan Investment",
         },
@@ -450,72 +450,78 @@ const Dashboard = () => {
         </div>
 
         {/* Main Content Area */}
-        <div className="main-content">
+        <div className="dashboard__main-content">
           {/* Transactions Panel */}
-          <div className="content-panel transactions-panel">
-            <div className="panel-header">
-              <div className="panel-title">
-                <HistoryOutlined style={{ marginRight: "8px" }} />
-                <h3>Recent Transactions</h3>
+          <div className="dashboard__panel dashboard__panel--transactions">
+            <div className="dashboard__panel-header">
+              <div className="dashboard__panel-title">
+                <HistoryOutlined className="dashboard__panel-icon" />
+                <h3 className="dashboard__panel-heading">
+                  Recent Transactions
+                </h3>
               </div>
-              <div className="panel-actions">
+              <div className="dashboard__panel-actions">
                 <button
-                  className="btn-icon small"
+                  className="dashboard__action-btn dashboard__action-btn--view-all"
                   onClick={() => navigate("/transactions")}
                 >
                   View All
                 </button>
-                <button className="btn-icon small" onClick={() => {}}>
-                  <Filter size={14} />
+                <button className="dashboard__action-btn dashboard__action-btn--filter">
+                  <Filter className="dashboard__filter-icon" />
                 </button>
               </div>
             </div>
 
-            <div className="panel-content">
+            <div className="dashboard__panel-content">
               {dashboardData.transactions.length === 0 ? (
-                <div className="empty-state modern">
-                  <div className="empty-icon">
-                    <CreditCardOutlined />
+                <div className="dashboard__empty-state">
+                  <div className="dashboard__empty-icon">
+                    <CreditCardOutlined className="dashboard__empty-svg" />
                   </div>
-                  <h4>No transactions yet</h4>
-                  <p>Start by making your first deposit</p>
+                  <h4 className="dashboard__empty-title">
+                    No transactions yet
+                  </h4>
+                  <p className="dashboard__empty-description">
+                    Start by making your first deposit
+                  </p>
                   <button
-                    className="btn-primary small"
+                    className="dashboard__btn dashboard__btn--primary dashboard__btn--small"
                     onClick={() => navigate("/deposit")}
                   >
                     Make First Deposit
                   </button>
                 </div>
               ) : (
-                <div className="transactions-list modern">
+                <div className="dashboard__transactions-list">
                   {dashboardData.transactions.slice(0, 5).map((transaction) => (
                     <div
                       key={transaction._id}
-                      className="transaction-item modern"
+                      className="dashboard__transaction-item"
                     >
-                      <div className="transaction-icon-container">
+                      <div className="dashboard__transaction-icon-wrapper">
                         {getTransactionIcon(transaction.type)}
                       </div>
-                      <div className="transaction-info">
-                        <h4 className="transaction-title">
+                      <div className="dashboard__transaction-info">
+                        <h4 className="dashboard__transaction-title">
                           {transaction.description ||
                             (transaction.type === "deposit"
                               ? "Deposit"
                               : transaction.type === "withdrawal"
-                              ? "Withdrawal"
-                              : transaction.type === "investment"
-                              ? "Investment"
-                              : transaction.type === "profit"
-                              ? "Profit Earnings"
-                              : "Transaction")}
+                                ? "Withdrawal"
+                                : transaction.type === "investment"
+                                  ? "Investment"
+                                  : transaction.type === "profit"
+                                    ? "Profit Earnings"
+                                    : "Transaction")}
                         </h4>
-                        <p className="transaction-date">
+                        <p className="dashboard__transaction-date">
                           {formatDate(transaction.createdAt)}
                         </p>
                       </div>
-                      <div className="transaction-amounts">
+                      <div className="dashboard__transaction-details">
                         <span
-                          className={`amount ${
+                          className={`dashboard__transaction-amount dashboard__transaction-amount--${
                             transaction.type === "withdrawal"
                               ? "negative"
                               : "positive"
@@ -524,7 +530,7 @@ const Dashboard = () => {
                           {transaction.type === "withdrawal" ? "-" : "+"}
                           {formatCurrency(
                             transaction.requestedAmount ||
-                              transaction.creditedAmount
+                              transaction.creditedAmount,
                           )}
                         </span>
                         {getStatusBadge(transaction.status)}
@@ -537,63 +543,68 @@ const Dashboard = () => {
           </div>
 
           {/* Quick Actions Panel */}
-          <div className="content-panel actions-panel">
-            <div className="panel-header">
-              <div className="panel-title">
-                <RocketOutlined style={{ marginRight: "8px" }} />
-                <h3>Quick Actions</h3>
+          <div className="dashboard__panel dashboard__panel--quick-actions">
+            <div className="dashboard__panel-header">
+              <div className="dashboard__panel-title">
+                <RocketOutlined className="dashboard__panel-icon" />
+                <h3 className="dashboard__panel-heading">Quick Actions</h3>
               </div>
             </div>
 
-            <div className="panel-content">
-              <div className="actions-grid modern">
+            <div className="dashboard__panel-content">
+              <div className="dashboard__actions-grid">
                 <button
-                  className="action-card deposit-action"
+                  className="dashboard__action-card dashboard__action-card--deposit"
                   onClick={() => handleQuickAction("deposit")}
                 >
-                  <div className="action-icon">
-                    <ArrowDownRight size={20} />
+                  <div className="dashboard__action-icon-wrapper dashboard__action-icon-wrapper--deposit">
+                    <ArrowDownRight className="dashboard__action-icon" />
                   </div>
-                  <div className="action-content">
-                    <h4>Deposit</h4>
-                    <p>Add funds to your wallet</p>
+                  <div className="dashboard__action-content">
+                    <h4 className="dashboard__action-title">Deposit</h4>
+                    <p className="dashboard__action-description">
+                      Add funds to your wallet
+                    </p>
                   </div>
                 </button>
 
                 <button
-                  className="action-card invest-action"
+                  className="dashboard__action-card dashboard__action-card--invest"
                   onClick={() => handleQuickAction("invest")}
                 >
-                  <div className="action-icon">
-                    <TrendingUp size={20} />
+                  <div className="dashboard__action-icon-wrapper dashboard__action-icon-wrapper--invest">
+                    <TrendingUp className="dashboard__action-icon" />
                   </div>
-                  <div className="action-content">
-                    <h4>Invest</h4>
-                    <p>Start earning returns</p>
+                  <div className="dashboard__action-content">
+                    <h4 className="dashboard__action-title">Invest</h4>
+                    <p className="dashboard__action-description">
+                      Start earning returns
+                    </p>
                   </div>
                 </button>
 
                 <button
-                  className="action-card withdraw-action"
+                  className="dashboard__action-card dashboard__action-card--withdraw"
                   onClick={() => handleQuickAction("withdraw")}
                 >
-                  <div className="action-icon">
-                    <ArrowUpRight size={20} />
+                  <div className="dashboard__action-icon-wrapper dashboard__action-icon-wrapper--withdraw">
+                    <ArrowUpRight className="dashboard__action-icon" />
                   </div>
-                  <div className="action-content">
-                    <h4>Withdraw</h4>
-                    <p>Withdraw your earnings</p>
+                  <div className="dashboard__action-content">
+                    <h4 className="dashboard__action-title">Withdraw</h4>
+                    <p className="dashboard__action-description">
+                      Withdraw your earnings
+                    </p>
                   </div>
                 </button>
 
                 <button
-                  className="action-card referral-action"
+                  className="dashboard__action-card dashboard__action-card--referral"
                   onClick={() => handleQuickAction("referral")}
                 >
-                  <div className="action-icon">
+                  <div className="dashboard__action-icon-wrapper dashboard__action-icon-wrapper--referral">
                     <svg
-                      width="20"
-                      height="20"
+                      className="dashboard__action-icon"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -605,9 +616,11 @@ const Dashboard = () => {
                       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
                   </div>
-                  <div className="action-content">
-                    <h4>Refer</h4>
-                    <p>Earn with friends</p>
+                  <div className="dashboard__action-content">
+                    <h4 className="dashboard__action-title">Refer</h4>
+                    <p className="dashboard__action-description">
+                      Earn with friends
+                    </p>
                   </div>
                 </button>
               </div>
