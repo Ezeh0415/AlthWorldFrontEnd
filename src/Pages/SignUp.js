@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../Assets/logo.svg";
+import logo from "../Assets/ChatGPT Image Jan 22, 2026, 12_37_21 AM.png";
 import "../styles/SignUp.css";
 
 const Base_url = process.env.REACT_APP_API_URL;

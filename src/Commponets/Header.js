@@ -15,7 +15,7 @@ import {
   UserOutlined as UserCircleOutlined,
 } from "@ant-design/icons";
 import "../styles/Header.css";
-import logo from "../Assets/logo.svg";
+import logo from "../Assets/ChatGPT Image Jan 22, 2026, 12_37_21 AM.png";
 import { useNavigate } from "react-router-dom";
 import ApiService from "./ApiService";
 
@@ -45,7 +45,7 @@ const Header = () => {
       icon: <FileTextOutlined />,
       path: "/transactions",
     },
-    { id: 5, label: "Profile", icon: <UserCircleOutlined />, path: "/profile" },
+    // { id: 5, label: "Profile", icon: <UserCircleOutlined />, path: "/profile" },
   ];
 
   const userStr = ApiService.getUser();
@@ -126,20 +126,27 @@ const Header = () => {
                 className="header__logo"
                 aria-label="AllthWorld Logo"
               />
-              <span className="header__brand-name">AllthWorld</span>
+              {/* <span className="header__brand-name">AllthWorld</span> */}
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="header__desktop-nav" aria-label="Primary Navigation">
+            <nav
+              className="header__desktop-nav"
+              aria-label="Primary Navigation"
+            >
               <ul className="header__nav-list">
                 {navItems.map((item) => (
                   <li key={item.id} className="header__nav-item">
                     <button
                       className={`header__nav-button ${
-                        activeNav === item.label ? "header__nav-button--active" : ""
+                        activeNav === item.label
+                          ? "header__nav-button--active"
+                          : ""
                       }`}
                       onClick={() => handleNavClick(item.label, item.path)}
-                      aria-current={activeNav === item.label ? "page" : undefined}
+                      aria-current={
+                        activeNav === item.label ? "page" : undefined
+                      }
                       aria-label={`Go to ${item.label}`}
                     >
                       <span className="header__nav-icon">{item.icon}</span>
@@ -154,7 +161,7 @@ const Header = () => {
           {/* Right Section - Search & User Controls */}
           <div className="header__right-section">
             {/* Search Bar (Desktop) */}
-            <div className="header__search-wrapper header__search-wrapper--desktop">
+            {/* <div className="header__search-wrapper header__search-wrapper--desktop">
               <SearchOutlined className="header__search-icon" />
               <input
                 type="search"
@@ -165,7 +172,7 @@ const Header = () => {
                 onKeyDown={handleSearchSubmit}
                 aria-label="Search"
               />
-            </div>
+            </div> */}
 
             {/* Notifications */}
             <button
@@ -175,7 +182,10 @@ const Header = () => {
             >
               <BellOutlined className="header__action-icon" />
               {notifications > 0 && (
-                <span className="header__notification-badge" aria-label={`${notifications} unread`}>
+                <span
+                  className="header__notification-badge"
+                  aria-label={`${notifications} unread`}
+                >
                   {notifications}
                 </span>
               )}
@@ -211,7 +221,11 @@ const Header = () => {
 
               {/* Profile Dropdown Menu */}
               {isProfileOpen && (
-                <div className="header__dropdown-menu" role="menu" aria-label="User menu">
+                <div
+                  className="header__dropdown-menu"
+                  role="menu"
+                  aria-label="User menu"
+                >
                   <div className="header__dropdown-header">
                     <div
                       className="header__dropdown-avatar"
@@ -226,27 +240,35 @@ const Header = () => {
                     </div>
                   </div>
 
-                  <div className="header__dropdown-divider" aria-hidden="true" />
+                  <div
+                    className="header__dropdown-divider"
+                    aria-hidden="true"
+                  />
 
-                  <button
+                  {/* <button
                     className="header__dropdown-item"
                     role="menuitem"
                     onClick={() => handleNavClick("Profile", "/profile")}
                   >
                     <UserCircleOutlined className="header__dropdown-item-icon" />
-                    <span className="header__dropdown-item-text">My Profile</span>
-                  </button>
+                    <span className="header__dropdown-item-text">
+                      My Profile
+                    </span>
+                  </button> */}
 
-                  <button
+                  {/* <button
                     className="header__dropdown-item"
                     role="menuitem"
                     onClick={() => console.log("Settings clicked")}
                   >
                     <SettingOutlined className="header__dropdown-item-icon" />
                     <span className="header__dropdown-item-text">Settings</span>
-                  </button>
+                  </button> */}
 
-                  <div className="header__dropdown-divider" aria-hidden="true" />
+                  <div
+                    className="header__dropdown-divider"
+                    aria-hidden="true"
+                  />
 
                   <button
                     className="header__dropdown-item header__dropdown-item--logout"
@@ -310,7 +332,9 @@ const Header = () => {
             </div>
             <div className="header__mobile-user-details">
               <p className="header__mobile-user-name">{userData.name}</p>
-              <p className="header__mobile-user-tier">{userData.tier || "Standard User"}</p>
+              <p className="header__mobile-user-tier">
+                {userData.tier || "Standard User"}
+              </p>
             </div>
           </div>
         </div>
@@ -336,7 +360,9 @@ const Header = () => {
               <li key={item.id} className="header__mobile-nav-item">
                 <button
                   className={`header__mobile-nav-button ${
-                    activeNav === item.label ? "header__mobile-nav-button--active" : ""
+                    activeNav === item.label
+                      ? "header__mobile-nav-button--active"
+                      : ""
                   }`}
                   onClick={() => handleNavClick(item.label, item.path)}
                   aria-current={activeNav === item.label ? "page" : undefined}

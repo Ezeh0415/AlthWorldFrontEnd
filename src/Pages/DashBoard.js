@@ -32,6 +32,7 @@ const Dashboard = () => {
     profits: 0,
     accountStatus: { isVerified: false },
   });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [useMockData, setUseMockData] = useState(false);
@@ -58,6 +59,8 @@ const Dashboard = () => {
       // Transform API data to match our component structure
       const transformedData = transformApiData(data);
       setDashboardData(transformedData);
+
+      // console.log(transformedData)
 
       // Calculate derived stats
       calculateStats(transformedData);
@@ -93,12 +96,15 @@ const Dashboard = () => {
   };
 
   const calculateStats = (data) => {
-    const activeInvestments = data.investments.filter(
-      (inv) => inv.status === "active" || inv.status === "running",
+    const activeInvestments = data.investments?.filter(
+      (inv) =>
+        inv.investmentStatus === "active" || inv.investmentStatus === "running",
     ).length;
 
-    const completedInvestments = data.investments.filter(
-      (inv) => inv.status === "completed" || inv.status === "ended",
+    const completedInvestments = data.investments?.filter(
+      (inv) =>
+        inv.investmentStatus === "completed" ||
+        inv.investmentStatus === "ended",
     ).length;
 
     // Calculate total investments
@@ -182,18 +188,6 @@ const Dashboard = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amountInDollars);
-  };
-
-  const formatCompactCurrency = (amount) => {
-    const amountInDollars = amount / 100;
-
-    if (amountInDollars >= 1000000) {
-      return `$${(amountInDollars / 1000000).toFixed(1)}M`;
-    }
-    // if (amountInDollars >= 1000) {
-    //   return `$${(amountInDollars / 1000).toFixed(1)}K`;
-    // }
-    return `$${amountInDollars.toFixed(0)}`;
   };
 
   const formatDate = (dateString) => {
@@ -343,15 +337,15 @@ const Dashboard = () => {
               </p>
               <div className="card-details">
                 <div className="detail-item">
-                  <span className="detail-label">Invested</span>
+                  <span className="detail-label">Investment Return</span>
                   <span className="detail-value">
-                    {formatCompactCurrency(dashboardData.wallet.invBalance)}
+                    {formatCurrency(dashboardData.wallet.invBalance)}
                   </span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Pending</span>
                   <span className="detail-value">
-                    {formatCompactCurrency(dashboardData.wallet.pending)}
+                    {formatCurrency(dashboardData.wallet.pending)}
                   </span>
                 </div>
               </div>
@@ -369,10 +363,11 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="card-content">
-              <h3 className="card-label">Total Investments</h3>
+              <h3 className="card-label">Total Investments Returns</h3>
               <p className="card-amount">
                 {formatCurrency(dashboardData.wallet.invBalance)}
               </p>
+
               <div className="card-stats">
                 <div className="stat-item">
                   <div className="stat-badge active">
@@ -401,9 +396,9 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="card-content">
-              <h3 className="card-label">Total Profits</h3>
+              <h3 className="card-label">Total investment Profits</h3>
               <p className="card-amount">
-                {formatCurrency(dashboardData.profits)}
+                {formatCurrency(dashboardData.wallet.totalReturn)}
               </p>
               <div className="growth-indicator">
                 <ArrowUpRight size={14} />
@@ -598,7 +593,7 @@ const Dashboard = () => {
                   </div>
                 </button>
 
-                <button
+                {/* <button
                   className="dashboard__action-card dashboard__action-card--referral"
                   onClick={() => handleQuickAction("referral")}
                 >
@@ -622,7 +617,7 @@ const Dashboard = () => {
                       Earn with friends
                     </p>
                   </div>
-                </button>
+                </button> */}
               </div>
             </div>
           </div>

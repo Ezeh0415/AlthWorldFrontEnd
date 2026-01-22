@@ -1,6 +1,7 @@
 * {
   box-sizing: border-box;
   font-family: "Inter", system-ui, sans-serif;
+  color: #000;
 }
 
 /* =====================
@@ -16,19 +17,19 @@
 }
 
 .login-card {
-  background: #020617;
+  background: #fff;
   border: 1px solid #1e293b;
   border-radius: 14px;
   width: 100%;
   max-width: 100%;
   padding: 24px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-  color: #e5e7eb;
+  color: #1e293b;
 }
 
 .login-logo {
   display: block;
-  width: 52px;
+  width: 152px;
   margin: 0 auto 16px;
 }
 
@@ -59,21 +60,21 @@
 .input-group label {
   font-size: 0.75rem;
   margin-bottom: 6px;
-  color: #cbd5f5;
+  color: #000;
 }
 
 .input-group input {
   padding: 11px 13px;
   border-radius: 8px;
   border: 1px solid #1e293b;
-  background: #020617;
-  color: #e5e7eb;
+  background: #e5e7eb;
+  color: #000;
   outline: none;
   font-size: 0.9rem;
 }
 
 .input-group input::placeholder {
-  color: #64748b;
+  color: #000;
 }
 
 .input-group input:focus {

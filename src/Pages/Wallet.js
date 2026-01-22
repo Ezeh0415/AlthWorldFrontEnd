@@ -65,9 +65,6 @@ const Wallet = () => {
         balance: data.wallet?.balance || 0,
         invBalance: data.wallet?.invBalance || 0,
         pending: data.wallet?.pending || 0,
-        totalDeposits: data.stats?.totalDeposits || 0,
-        totalWithdrawals: data.stats?.totalWithdrawals || 0,
-        totalProfits: data.profits || 0,
       };
 
       setWalletData(transformedData);
@@ -241,14 +238,6 @@ const Wallet = () => {
     window.location.href = "/withdraw";
   };
 
-  const handleTransfer = () => {
-    console.log("Transfer initiated");
-  };
-
-  const handleViewHistory = () => {
-    console.log("View transaction history");
-  };
-
   if (loading) {
     return (
       <div className="wallet-container">
@@ -331,9 +320,6 @@ const Wallet = () => {
                   <div className="balance-amount">
                     {formatCurrency(walletData.balance)}
                   </div>
-                  <p className="balance-converted">
-                    ≈ {formatCurrency(walletData.balance * 0.85)} in EUR
-                  </p>
                 </div>
               ) : (
                 <div className="balance-hidden">
@@ -360,10 +346,6 @@ const Wallet = () => {
                 </div>
                 <div className="metric-value available">
                   {formatCurrency(walletData.balance)}
-                </div>
-                <div className="metric-change positive">
-                  +{formatCurrency(walletData.balance * 0.85)}
-                  <span>this month</span>
                 </div>
               </div>
 
@@ -405,31 +387,9 @@ const Wallet = () => {
                 <div className="metric-value pending">
                   {formatCurrency(walletData.pending)}
                 </div>
-                <div className="metric-change">
-                  <span>2 transactions</span>
-                </div>
               </div>
 
-              <div className="metric-card">
-                <div className="metric-header">
-                  <div
-                    className="metric-icon"
-                    style={{
-                      background: "rgba(159, 122, 234, 0.1)",
-                      color: "#9f7aea",
-                    }}
-                  >
-                    <WalletOutlined />
-                  </div>
-                  <span className="metric-title">Reserved</span>
-                </div>
-                <div className="metric-value reserved">
-                  {formatCurrency(1500)}
-                </div>
-                <div className="metric-change">
-                  <span>for withdrawals</span>
-                </div>
-              </div>
+              
             </div>
 
             {/* Action Buttons */}
@@ -453,7 +413,7 @@ const Wallet = () => {
                 <span className="action-description">Cash out funds</span>
               </button>
 
-              <button
+              {/* <button
                 className="action-button transfer"
                 onClick={handleTransfer}
               >
@@ -462,18 +422,9 @@ const Wallet = () => {
                 </div>
                 <span className="action-title">Transfer</span>
                 <span className="action-description">Send to others</span>
-              </button>
+              </button> */}
 
-              <button
-                className="action-button history"
-                onClick={handleViewHistory}
-              >
-                <div className="action-icon">
-                  <HistoryOutlined />
-                </div>
-                <span className="action-title">History</span>
-                <span className="action-description">View transactions</span>
-              </button>
+           
             </div>
           </div>
         </div>
@@ -549,7 +500,7 @@ const Wallet = () => {
                           Math.abs(
                             transaction.requestedAmount ||
                               transaction.creditedAmount ||
-                              transaction.amount,
+                              transaction.amount || 0,
                           ),
                         )}
                       </span>
@@ -571,23 +522,23 @@ const Wallet = () => {
               <div className="summary-stat">
                 <span className="stat-label">Total Deposits</span>
                 <span className="stat-value positive">
-                  {formatCurrency(walletData.totalDeposits)}
+                  {formatCurrency(walletData.totalDeposits || 0)}
                 </span>
               </div>
 
               <div className="summary-stat">
                 <span className="stat-label">Total Withdrawals</span>
                 <span className="stat-value negative">
-                  {formatCurrency(walletData.totalWithdrawals)}
+                  {formatCurrency(walletData.totalWithdrawals || 0)}
                 </span>
               </div>
 
-              <div className="summary-stat">
+              {/* <div className="summary-stat">
                 <span className="stat-label">Net Profit</span>
                 <span className="stat-value positive">
                   {formatCurrency(walletData.totalProfits)}
                 </span>
-              </div>
+              </div> */}
 
               <div className="summary-stat">
                 <span className="stat-label">Pending Balance</span>
@@ -597,7 +548,7 @@ const Wallet = () => {
               </div>
             </div>
 
-            <div className="quick-insights">
+            {/* <div className="quick-insights">
               <h4 className="insights-title">Quick Insights</h4>
               <div className="insight-item">
                 <div className="insight-icon positive">
@@ -624,7 +575,7 @@ const Wallet = () => {
                   Consider diversifying your investment portfolio
                 </span>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 

@@ -44,9 +44,10 @@
 }
 
 .header__logo {
-  height: 32px;
+  height: 110px;
   width: auto;
   flex-shrink: 0;
+  margin-left: -30px;
 }
 
 .header__brand-name {

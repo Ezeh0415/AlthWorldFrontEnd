@@ -57,7 +57,7 @@ body {
 }
 
 .signup-logo {
-  width: clamp(40px, 6vw, 48px);
+  width: clamp(150px, 6vw, 108px);
   height: auto;
   margin-bottom: 8px;
 }

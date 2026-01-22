@@ -23,7 +23,7 @@ import {
   BarChartOutlined,
   QuestionCircleOutlined,
   ArrowDownOutlined, // For deposits
- // For withdrawals
+  // For withdrawals
   CheckCircleFilled, // For confirmed deposits
 } from "@ant-design/icons";
 import "../styles/Investment.css";
@@ -49,7 +49,7 @@ const Investments = () => {
       id: "basic",
       name: "Basic Plan",
       minAmount: 100,
-      maxAmount: 999,
+      maxAmount: 1000,
       roi: 2,
       duration: 30,
       color: "#10B981",
@@ -61,7 +61,7 @@ const Investments = () => {
       id: "standard",
       name: "Standard Plan",
       minAmount: 500,
-      maxAmount: 1999,
+      maxAmount: 2000,
       roi: 4,
       duration: 60,
       color: "#3B82F6",
@@ -73,7 +73,7 @@ const Investments = () => {
       id: "premium",
       name: "Premium Plan",
       minAmount: 2000,
-      maxAmount: 4999,
+      maxAmount: 5000,
       roi: 6,
       duration: 90,
       color: "#8B5CF6",
@@ -104,6 +104,7 @@ const Investments = () => {
       // Fetch dashboard data
       const data = await ApiService.getDashboardData();
       setDashboardData(data);
+      console.log(data);
 
       // Extract investments from dashboard data
       let apiInvestments = [];
@@ -117,12 +118,12 @@ const Investments = () => {
             inv.roi || inv.investmentType === "basic"
               ? 2
               : inv.investmentType === "standard"
-              ? 4
-              : inv.investmentType === "premium"
-              ? 6
-              : inv.investmentType === "ultimate"
-              ? 8
-              : 2;
+                ? 4
+                : inv.investmentType === "premium"
+                  ? 6
+                  : inv.investmentType === "ultimate"
+                    ? 8
+                    : 2;
 
           // Calculate total returns if not present
           const totalReturns = inv.profits || inv.totalReturns || 0;
@@ -178,7 +179,7 @@ const Investments = () => {
       .sort(
         (a, b) =>
           new Date(b.createdAt || b.date || 0) -
-          new Date(a.createdAt || a.date || 0)
+          new Date(a.createdAt || a.date || 0),
       )
       .slice(0, 5); // Get last 5 deposits
 
@@ -199,7 +200,7 @@ const Investments = () => {
       totalDeposits: recentDeposits.length,
       totalDepositAmount: recentDeposits.reduce(
         (sum, deposit) => sum + (deposit.requestedAmount || 0),
-        0
+        0,
       ),
     };
 
@@ -262,14 +263,14 @@ const Investments = () => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount);
   };
 
   const formatCompactCurrency = (v) => {
     const amount = v || 0;
-    if (amount >= 1000000) return `₦${(amount / 1000000).toFixed(1)}M`;
+    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
     return `$${amount}`;
   };
 
@@ -411,55 +412,142 @@ const Investments = () => {
 
   /* ------------------ CREATE INVESTMENT ------------------ */
   const handleNewInvestment = async ({ amount, startDate, endDate }) => {
+  setError("");
+  
+  // Validate selected plan exists
+  if (!selectedPlan) {
+    setError("Please select an investment plan");
+    return;
+  }
+  
+  const plan = investmentPlans.find((p) => p.id === selectedPlan);
+  
+  // Validate plan exists
+  if (!plan) {
+    setError("Selected investment plan not found");
+    return;
+  }
+  
+  // Parse amount with better validation
+  const value = parseFloat(amount);
+  
+  // Comprehensive validation
+  if (isNaN(value) || !startDate || !endDate) {
+    setError("All fields are required");
+    return;
+  }
+  
+  // Check for negative or zero amount
+  if (value <= 0) {
+    setError("Investment amount must be greater than 0");
+    return;
+  }
+  
+  // Check min/max amount with better precision
+  if (value < plan.minAmount) {
+    setError(`Minimum investment amount is ${formatCurrency(plan.minAmount)}`);
+    return;
+  }
+  
+  if (value > plan.maxAmount) {
+    setError(`Maximum investment amount is ${formatCurrency(plan.maxAmount)}`);
+    return;
+  }
+  
+  // Validate date range
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset time for accurate comparison
+  
+  if (start < today) {
+    setError("Start date cannot be in the past");
+    return;
+  }
+  
+  if (end <= start) {
+    setError("End date must be after start date");
+    return;
+  }
+  
+  // Calculate duration in days
+  const durationDays = Math.round((end - start) / (1000 * 60 * 60 * 24));
+  
+  // Validate against plan duration if applicable
+  if (plan.duration && durationDays < plan.duration) {
+    setError(`Minimum investment duration is ${plan.duration} days`);
+    return;
+  }
+  
+  try {
+    setLoadingInvestment(true);
+    
+    // Prepare data for API
+    const investmentData = {
+      amount: value,
+      roi: plan.roi,
+      investmentType: plan.id,
+      planName: plan.name, // Include plan name for reference
+      investmentStartDate: startDate,
+      investmentEndDate: endDate,
+      duration: durationDays,
+      expectedReturn: value * (plan.roi / 100), // Calculate expected return
+      // userId: dashboardData?.accountStatus?._id || localStorage.getItem("userId"),
+    };
+    
+    console.log("Submitting investment:", investmentData); // For debugging
+    
+    const result = await ApiService.invest(investmentData);
+    
+    // Validate response
+    if (!result || !result.success) {
+      throw new Error(result?.message || "Investment creation failed");
+    }
+    
+    // Reset form state
+    setShowNewInvestmentModal(false);
+    setSelectedPlan("");
     setError("");
-
-    const plan = investmentPlans.find((p) => p.id === selectedPlan);
-    const value = Number(amount);
-
-    if (!plan || !value || !startDate || !endDate) {
-      setError("All fields are required");
-      return;
+    
+    // Show success message
+    setSuccess(true);
+    
+    
+    
+    // Optional: Show success toast/notification
+    if (result.message) {
+      // Show notification: result.message
     }
-
-    if (value < plan.minAmount || value > plan.maxAmount) {
-      setError(
-        `Amount must be between ${formatCurrency(
-          plan.minAmount
-        )} and ${formatCurrency(plan.maxAmount)}`
-      );
-      return;
+    
+    return result; // Return result for potential chaining
+    
+  } catch (err) {
+    console.error("Investment creation error:", err);
+    
+    // Better error handling
+    let errorMessage = "Failed to create investment";
+    
+    if (err.response) {
+      // Server responded with error
+      errorMessage = err.response.data?.message || err.response.statusText;
+    } else if (err.request) {
+      // No response received
+      errorMessage = "Network error. Please check your connection.";
+    } else if (err.message) {
+      // Error thrown manually
+      errorMessage = err.message;
     }
-
-    try {
-      setLoadingInvestment(true);
-
-      // Prepare data for API
-      const investmentData = {
-        amount: value,
-        roi: plan.roi,
-        investmentType: plan.id,
-        investmentStartDate: startDate,
-        investmentEndDate: endDate,
-        // userId:
-        //   dashboardData?.accountStatus?._id || localStorage.getItem("userId"),
-      };
-
-      
-      const result = await ApiService.invest(investmentData);
-
-      setShowNewInvestmentModal(false);
-      setSelectedPlan("");
-      setError("");
-
-      // Show success message
-      setSuccess(true);
-    } catch (err) {
-      // console.error("Investment creation error:", err);
-      setError(`${err}`);
-    } finally {
-      setLoadingInvestment(false);
-    }
-  };
+    
+    setError(errorMessage);
+    
+    // Optional: Log error to monitoring service
+    // logErrorToService(err, { amount, startDate, endDate, planId: selectedPlan });
+    
+    throw err; // Re-throw if parent component needs to handle
+  } finally {
+    setLoadingInvestment(false);
+  }
+};
 
   /* ------------------ MODAL ------------------ */
   const NewInvestmentModal = () => {
@@ -583,20 +671,15 @@ const Investments = () => {
                         onChange={(e) => setAmount(e.target.value)}
                         placeholder={`Enter amount between ${formatInvestCurrency(
                           investmentPlans.find((p) => p.id === selectedPlan)
-                            .minAmount
+                            .minAmount,
                         )} and ${formatInvestCurrency(
                           investmentPlans.find((p) => p.id === selectedPlan)
-                            .maxAmount
+                            .maxAmount,
                         )}`}
-                        min={
-                          investmentPlans.find((p) => p.id === selectedPlan)
-                            .minAmount
-                        }
-                        max={
-                          investmentPlans.find((p) => p.id === selectedPlan)
-                            .maxAmount
-                        }
-                        step="100"
+                        // Remove these lines:
+                        // min={investmentPlans.find((p) => p.id === selectedPlan).minAmount}
+                        // max={investmentPlans.find((p) => p.id === selectedPlan).maxAmount}
+                        step="0.01"
                         required
                       />
                     </div>
@@ -648,7 +731,7 @@ const Investments = () => {
                         <span>
                           {Math.round(
                             (new Date(endDate) - new Date(startDate)) /
-                              (1000 * 60 * 60 * 24)
+                              (1000 * 60 * 60 * 24),
                           )}{" "}
                           days
                         </span>
@@ -656,7 +739,9 @@ const Investments = () => {
                       <div className="summary-item total">
                         <span>Total Investment:</span>
                         <span className="total-investment">
-                          {amount ? formatInvestCurrency(parseFloat(amount)) : "$0"}
+                          {amount
+                            ? formatInvestCurrency(parseFloat(amount))
+                            : "$0"}
                         </span>
                       </div>
                     </div>
@@ -765,24 +850,24 @@ const Investments = () => {
               <div className="stat-label">Total Returns</div>
               <div className="stat-value">
                 {dashboardData?.profits
-                  ? formatCompactCurrency(dashboardData.profits)
+                  ? formatCompactCurrency(dashboardData.totalDeposits)
                   : formatCompactCurrency(userStats.totalReturns)}
               </div>
               <div className="stat-details">
                 <span className="detail-label">All time</span>
                 <span className="detail-value positive">
                   <ArrowUpOutlined /> +
-                  {dashboardData?.profits && dashboardData?.wallet?.balance
+                  {dashboardData?.totalDeposits && dashboardData?.wallet?.balance
                     ? (
-                        (dashboardData.profits / dashboardData.wallet.balance) *
+                        (dashboardData.totalDeposits / dashboardData.wallet.balance) *
                         100
                       ).toFixed(1)
                     : userStats.totalInvested > 0
-                    ? (
-                        (userStats.totalReturns / userStats.totalInvested) *
-                        100
-                      ).toFixed(1)
-                    : 0}
+                      ? (
+                          (userStats.totalReturns / userStats.totalInvested) *
+                          100
+                        ).toFixed(1)
+                      : 0}
                   %
                 </span>
               </div>
@@ -798,7 +883,7 @@ const Investments = () => {
               <div className="stat-value">
                 {dashboardData?.wallet?.balance && dashboardData?.profits
                   ? formatCompactCurrency(
-                      dashboardData.wallet.balance + dashboardData.profits
+                      dashboardData.wallet.balance + dashboardData.profits,
                     )
                   : formatCompactCurrency(userStats.totalPortfolioValue)}
               </div>
@@ -812,11 +897,11 @@ const Investments = () => {
                         100
                       ).toFixed(1)
                     : userStats.totalInvested > 0
-                    ? (
-                        (userStats.totalReturns / userStats.totalInvested) *
-                        100
-                      ).toFixed(1)
-                    : 0}
+                      ? (
+                          (userStats.totalReturns / userStats.totalInvested) *
+                          100
+                        ).toFixed(1)
+                      : 0}
                   %
                 </span>
               </div>

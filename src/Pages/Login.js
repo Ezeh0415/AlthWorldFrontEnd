@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/Login.css";
-import logo from "../Assets/logo.svg";
+import logo from "../Assets/ChatGPT Image Jan 22, 2026, 12_37_21 AM.png";
 
 // You should define these in a config file
 const Base_url = process.env.REACT_APP_API_URL;
@@ -106,6 +106,8 @@ const Login = () => {
         }),
       });
 
+      console.log(apiError);
+
       const contentType = response.headers.get("content-type");
       let responseData;
 
@@ -137,7 +139,6 @@ const Login = () => {
       }
 
       // Handle successful login
-      console.log("✅ Login successful!");
 
       // Extract user data from response (adjust based on your API)
       const userData = responseData.data || responseData.user || responseData;
@@ -158,14 +159,15 @@ const Login = () => {
       // Redirect to dashboard
       navigate("/");
     } catch (error) {
-      console.error("💥 Login Error:", error);
+      console.error("💥 Login Error:", error.message);
+      setApiError(error.message);
 
       // Handle network errors
       if (error.name === "TypeError") {
-        setApiError("Network error. Please check your connection.");
+        setErrors("Network error. Please check your connection.");
         setIsSubmitting(false);
       } else {
-        setApiError("An unexpected error occurred. Please try again.");
+        setErrors("An unexpected error occurred. Please try again.");
       }
 
       setIsSubmitting(false);
@@ -201,8 +203,8 @@ const Login = () => {
               className={errors.username ? "error" : ""}
               disabled={isSubmitting}
             />
-            {errors.username && (
-              <span className="error-text">{errors.username}</span>
+            {apiError && (
+              <span className="error-text">{apiError}</span>
             )}
           </div>
 
@@ -227,8 +229,8 @@ const Login = () => {
                 {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
-            {errors.password && (
-              <span className="error-text">{errors.password}</span>
+            {apiError && (
+              <span className="error-text">{apiError}</span>
             )}
           </div>
 
