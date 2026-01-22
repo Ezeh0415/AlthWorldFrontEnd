@@ -182,6 +182,13 @@ class ApiService {
     });
   }
 
+  async Withdraw(withdrawData) {
+    return await this.request("withdraw", {
+      method: "POST",
+      body: JSON.stringify(withdrawData),
+    });
+  }
+
   async invest(investmentData) {
     return await this.request("invest", {
       method: "POST",
@@ -199,14 +206,14 @@ class ApiService {
 
   async ConfirmDeposit(data) {
     return await this.request("confirmDeposit", {
-      method:"POST",
+      method: "POST",
       body: JSON.stringify(data),
     });
   }
 
   async declineDeposit(data) {
     return await this.request("cancleDeposit", {
-      method:"POST",
+      method: "POST",
       body: JSON.stringify(data),
     });
   }

@@ -12,6 +12,7 @@ import AdminSignUp from "./Pages/Admin/AdminSignUp";
 import AdminLogin from "./Pages/Admin/AdminLogin";
 import AdminHomePage from "./Pages/Admin/AdminHomePage";
 import AdminTransaction from "./Pages/Admin/AdminTransaction";
+import Withdraw from "./Pages/Withdraw";
 
 function App() {
   return (
@@ -64,6 +65,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Deposit />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/withdraw"
+          element={
+            <ProtectedRoute>
+              <Withdraw />
             </ProtectedRoute>
           }
         />

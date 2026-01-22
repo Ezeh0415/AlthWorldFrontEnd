@@ -21,6 +21,12 @@ import {
   SettingOutlined,
   BellOutlined,
   CaretDownOutlined,
+  CreditCardOutlined,
+  BankOutlined,
+  HistoryOutlined,
+  FilterOutlined,
+  DownloadOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import "../../styles/Admin/AdminHomePage.css";
 import ApiServices from "../../Commponets/ApiService";
@@ -31,18 +37,21 @@ const AdminHomePage = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [activeSection, setActiveSection] = useState("users");
   const [searchQuery, setSearchQuery] = useState("");
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: "New user registered", time: "5 min ago", unread: true },
-    { id: 2, message: "Transaction completed", time: "1 hour ago", unread: true },
-    { id: 3, message: "System update available", time: "2 hours ago", unread: false },
-  ]);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [showUserActions, setShowUserActions] = useState(null);
 
   // Responsive handling
   useEffect(() => {
     const checkScreenSize = () => {
       const isMobileView = window.innerWidth < 768;
       setIsMobile(isMobileView);
-      setIsSidebarOpen(!isMobileView); // Open on desktop, closed on mobile
+      if (isMobileView) {
+        setIsSidebarOpen(false);
+        setIsSearchExpanded(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
     };
 
     checkScreenSize();
@@ -69,11 +78,10 @@ const AdminHomePage = () => {
 
   const handleLogout = async () => {
     localStorage.clear();
-    await ApiServices.logOut();
     window.location.href = "/AdminLogin";
   };
 
-  // Mock Data
+  // Mock Data - Users as cards
   const users = [
     {
       id: 1,
@@ -83,6 +91,12 @@ const AdminHomePage = () => {
       balance: "$1,500",
       registration: "2024-01-15",
       avatarColor: "#667eea",
+      phone: "+1 (555) 123-4567",
+      location: "New York, USA",
+      lastActive: "2 hours ago",
+      kycStatus: "verified",
+      totalInvestments: "$5,200",
+      totalWithdrawals: "$3,700",
     },
     {
       id: 2,
@@ -92,6 +106,12 @@ const AdminHomePage = () => {
       balance: "$2,800",
       registration: "2024-01-14",
       avatarColor: "#764ba2",
+      phone: "+1 (555) 234-5678",
+      location: "London, UK",
+      lastActive: "5 hours ago",
+      kycStatus: "pending",
+      totalInvestments: "$1,000",
+      totalWithdrawals: "$200",
     },
     {
       id: 3,
@@ -101,6 +121,12 @@ const AdminHomePage = () => {
       balance: "$5,200",
       registration: "2024-01-13",
       avatarColor: "#f56565",
+      phone: "+1 (555) 345-6789",
+      location: "Sydney, Australia",
+      lastActive: "30 minutes ago",
+      kycStatus: "verified",
+      totalInvestments: "$12,500",
+      totalWithdrawals: "$7,300",
     },
     {
       id: 4,
@@ -110,6 +136,12 @@ const AdminHomePage = () => {
       balance: "$0",
       registration: "2024-01-12",
       avatarColor: "#38b2ac",
+      phone: "+1 (555) 456-7890",
+      location: "Toronto, Canada",
+      lastActive: "2 days ago",
+      kycStatus: "rejected",
+      totalInvestments: "$0",
+      totalWithdrawals: "$0",
     },
     {
       id: 5,
@@ -119,6 +151,12 @@ const AdminHomePage = () => {
       balance: "$3,400",
       registration: "2024-01-11",
       avatarColor: "#ed8936",
+      phone: "+1 (555) 567-8901",
+      location: "Berlin, Germany",
+      lastActive: "1 hour ago",
+      kycStatus: "verified",
+      totalInvestments: "$8,900",
+      totalWithdrawals: "$5,500",
     },
     {
       id: 6,
@@ -128,14 +166,67 @@ const AdminHomePage = () => {
       balance: "$1,200",
       registration: "2024-01-10",
       avatarColor: "#9f7aea",
+      phone: "+1 (555) 678-9012",
+      location: "Tokyo, Japan",
+      lastActive: "3 hours ago",
+      kycStatus: "pending",
+      totalInvestments: "$2,400",
+      totalWithdrawals: "$1,200",
+    },
+    {
+      id: 7,
+      name: "David Miller",
+      email: "david@example.com",
+      status: "active",
+      balance: "$4,800",
+      registration: "2024-01-09",
+      avatarColor: "#4299e1",
+      phone: "+1 (555) 789-0123",
+      location: "Paris, France",
+      lastActive: "15 minutes ago",
+      kycStatus: "verified",
+      totalInvestments: "$15,200",
+      totalWithdrawals: "$10,400",
+    },
+    {
+      id: 8,
+      name: "Lisa Taylor",
+      email: "lisa@example.com",
+      status: "active",
+      balance: "$2,100",
+      registration: "2024-01-08",
+      avatarColor: "#48bb78",
+      phone: "+1 (555) 890-1234",
+      location: "Singapore",
+      lastActive: "45 minutes ago",
+      kycStatus: "verified",
+      totalInvestments: "$6,500",
+      totalWithdrawals: "$4,400",
     },
   ];
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filterOptions = [
+    { id: "all", label: "All Users" },
+    { id: "active", label: "Active" },
+    { id: "pending", label: "Pending" },
+    { id: "suspended", label: "Suspended" },
+  ];
+
+  const filteredUsers = users.filter((user) => {
+    if (activeFilter !== "all" && user.status !== activeFilter) return false;
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (
+        user.name.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query) ||
+        user.phone.includes(query) ||
+        user.location.toLowerCase().includes(query)
+      );
+    }
+
+    return true;
+  });
 
   const stats = {
     totalUsers: 12456,
@@ -144,67 +235,276 @@ const AdminHomePage = () => {
     pendingTransactions: 15,
     growthRate: 12.5,
     avgBalance: 2450,
+    newUsersToday: 24,
+    activeInvestments: 89,
+    withdrawalsToday: 12,
+    depositRequests: 8,
   };
 
   const recentActivities = [
-    { id: 1, user: "John Doe", action: "Made deposit", amount: "$500", time: "10:30 AM" },
-    { id: 2, user: "Jane Smith", action: "Started investment", amount: "$1,000", time: "11:45 AM" },
-    { id: 3, user: "Robert Johnson", action: "Withdrawal", amount: "$300", time: "1:15 PM" },
-    { id: 4, user: "Sarah Wilson", action: "Updated profile", time: "2:30 PM" },
+    {
+      id: 1,
+      user: "John Doe",
+      action: "Made deposit",
+      amount: "$500",
+      time: "10:30 AM",
+      type: "deposit",
+      status: "completed",
+    },
+    {
+      id: 2,
+      user: "Jane Smith",
+      action: "Started investment",
+      amount: "$1,000",
+      time: "11:45 AM",
+      type: "investment",
+      status: "processing",
+    },
+    {
+      id: 3,
+      user: "Robert Johnson",
+      action: "Withdrawal request",
+      amount: "$300",
+      time: "1:15 PM",
+      type: "withdrawal",
+      status: "pending",
+    },
+    {
+      id: 4,
+      user: "Sarah Wilson",
+      action: "KYC Verification",
+      time: "2:30 PM",
+      type: "kyc",
+      status: "rejected",
+    },
+    {
+      id: 5,
+      user: "Michael Brown",
+      action: "Account upgrade",
+      amount: "$50",
+      time: "3:45 PM",
+      type: "upgrade",
+      status: "completed",
+    },
   ];
 
   const getStatusBadge = (status) => {
     const config = {
-      active: { 
-        color: "#10b981", 
+      active: {
+        color: "#10b981",
         bgColor: "#d1fae5",
-        icon: <CheckCircleOutlined /> 
+        icon: <CheckCircleOutlined />,
+        label: "Active",
       },
-      pending: { 
-        color: "#f59e0b", 
+      pending: {
+        color: "#f59e0b",
         bgColor: "#fef3c7",
-        icon: <ClockCircleOutlined /> 
+        icon: <ClockCircleOutlined />,
+        label: "Pending",
       },
-      suspended: { 
-        color: "#ef4444", 
+      suspended: {
+        color: "#ef4444",
         bgColor: "#fee2e2",
-        icon: <ExclamationCircleOutlined /> 
+        icon: <ExclamationCircleOutlined />,
+        label: "Suspended",
+      },
+      completed: {
+        color: "#10b981",
+        bgColor: "#d1fae5",
+        icon: <CheckCircleOutlined />,
+        label: "Completed",
+      },
+      processing: {
+        color: "#3b82f6",
+        bgColor: "#dbeafe",
+        icon: <ClockCircleOutlined />,
+        label: "Processing",
+      },
+      rejected: {
+        color: "#ef4444",
+        bgColor: "#fee2e2",
+        icon: <ExclamationCircleOutlined />,
+        label: "Rejected",
       },
     };
 
     const configItem = config[status] || config.active;
 
     return (
-      <span 
-        className="status-badge" 
-        style={{ 
+      <span
+        className="status-badge"
+        style={{
           color: configItem.color,
           backgroundColor: configItem.bgColor,
-          borderColor: configItem.color 
+          borderColor: configItem.color,
         }}
       >
         {configItem.icon}
-        <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
+        <span>{configItem.label}</span>
       </span>
     );
   };
 
-  const StatCard = ({ title, value, change, icon, color }) => (
+  const getActivityIcon = (type) => {
+    const icons = {
+      deposit: <ArrowDownOutlined style={{ color: "#10b981" }} />,
+      withdrawal: <ArrowUpOutlined style={{ color: "#ef4444" }} />,
+      investment: <DollarOutlined style={{ color: "#8b5cf6" }} />,
+      kyc: <UserOutlined style={{ color: "#3b82f6" }} />,
+      upgrade: <CreditCardOutlined style={{ color: "#f59e0b" }} />,
+    };
+    return icons[type] || <DollarOutlined />;
+  };
+
+  const StatCard = ({
+    title,
+    value,
+    change,
+    icon,
+    color,
+    prefix = "",
+    suffix = "",
+  }) => (
     <div className="stat-card">
       <div className="stat-header">
-        <div className="stat-icon" style={{ backgroundColor: color + '20', color: color }}>
+        <div
+          className="stat-icon"
+          style={{ backgroundColor: color + "20", color: color }}
+        >
           {icon}
         </div>
         <div className="stat-change">
           {change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-          <span style={{ color: change >= 0 ? '#10b981' : '#ef4444' }}>
+          <span style={{ color: change >= 0 ? "#10b981" : "#ef4444" }}>
             {Math.abs(change)}%
           </span>
         </div>
       </div>
       <div className="stat-info">
-        <h3>{value.toLocaleString()}</h3>
+        <h3>
+          {prefix}
+          {value.toLocaleString()}
+          {suffix}
+        </h3>
         <p>{title}</p>
+      </div>
+    </div>
+  );
+
+  const UserCard = ({ user }) => {
+    const isActive = showUserActions === user.id;
+
+    return (
+      <div className="user-card" key={user.id}>
+        <div className="user-card-header">
+          <div
+            className="user-avatar"
+            style={{ backgroundColor: user.avatarColor }}
+          >
+            {user.name.charAt(0)}
+          </div>
+          <div className="user-info">
+            <div className="user-name-email">
+              <h4>{user.name}</h4>
+              <p className="user-email">{user.email}</p>
+            </div>
+            <div className="user-location">
+              <span className="location-icon">📍</span>
+              <span>{user.location}</span>
+            </div>
+          </div>
+          <div className="user-status">
+            {getStatusBadge(user.status)}
+            <button
+              className="user-actions-toggle"
+              onClick={() => setShowUserActions(isActive ? null : user.id)}
+            >
+              <span>•••</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="user-card-body">
+          <div className="user-stats">
+            <div className="user-stat">
+              <span className="stat-label">Balance</span>
+              <span className="stat-value">{user.balance}</span>
+            </div>
+            <div className="user-stat">
+              <span className="stat-label">Invested</span>
+              <span className="stat-value">{user.totalInvestments}</span>
+            </div>
+            <div className="user-stat">
+              <span className="stat-label">Withdrawn</span>
+              <span className="stat-value">{user.totalWithdrawals}</span>
+            </div>
+            <div className="user-stat">
+              <span className="stat-label">KYC</span>
+              <span className={`kyc-status ${user.kycStatus}`}>
+                {user.kycStatus === "verified"
+                  ? "✓"
+                  : user.kycStatus === "pending"
+                    ? "⏳"
+                    : "✗"}
+              </span>
+            </div>
+          </div>
+
+          <div className="user-meta">
+            <div className="meta-item">
+              <span className="meta-label">Phone</span>
+              <span className="meta-value">{user.phone}</span>
+            </div>
+            <div className="meta-item">
+              <span className="meta-label">Joined</span>
+              <span className="meta-value">{user.registration}</span>
+            </div>
+            <div className="meta-item">
+              <span className="meta-label">Last Active</span>
+              <span className="meta-value">{user.lastActive}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="user-card-footer">
+          <div className={`user-actions ${isActive ? "show" : ""}`}>
+            <button className="action-btn view" title="View Profile">
+              <EyeOutlined />
+              <span>View</span>
+            </button>
+            <button className="action-btn edit" title="Edit User">
+              <EditOutlined />
+              <span>Edit</span>
+            </button>
+            <button className="action-btn message" title="Send Message">
+              <span>💬</span>
+              <span>Message</span>
+            </button>
+            <button className="action-btn delete" title="Delete User">
+              <DeleteOutlined />
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ActivityCard = ({ activity }) => (
+    <div className="activity-card" key={activity.id}>
+      <div className="activity-icon">{getActivityIcon(activity.type)}</div>
+      <div className="activity-content">
+        <div className="activity-header">
+          <span className="user-name">{activity.user}</span>
+          <span className="activity-action">{activity.action}</span>
+          {activity.amount && (
+            <span className="activity-amount">{activity.amount}</span>
+          )}
+        </div>
+        <div className="activity-footer">
+          <span className="activity-time">{activity.time}</span>
+          {getStatusBadge(activity.status)}
+        </div>
       </div>
     </div>
   );
@@ -215,7 +515,10 @@ const AdminHomePage = () => {
       {isMobile && (
         <button
           className="mobile-menu-toggle"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsSidebarOpen(!isSidebarOpen);
+          }}
         >
           <MenuOutlined />
         </button>
@@ -295,7 +598,7 @@ const AdminHomePage = () => {
               <Link className="link" to="/adminInvestment">
                 Investments
               </Link>
-              <span className="count-badge">3</span>
+              <span className="count-badge">89</span>
             </button>
           </div>
 
@@ -332,7 +635,7 @@ const AdminHomePage = () => {
 
         <div className="sidebar-footer">
           <div className="user-profile">
-            <div className="avatar" style={{ backgroundColor: '#667eea' }}>
+            <div className="avatar" style={{ backgroundColor: "#667eea" }}>
               A
             </div>
             <div className="user-info">
@@ -355,205 +658,269 @@ const AdminHomePage = () => {
             <h1>Dashboard</h1>
             <p>Welcome back, Admin</p>
           </div>
-          
+
           <div className="nav-right">
-            <div className="search-container">
-              <SearchOutlined />
-              <input 
-                type="text" 
-                placeholder="Search users, transactions..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            <div className="notification-bell">
-              <BellOutlined />
-              {notifications.filter(n => n.unread).length > 0 && (
-                <span className="notification-badge">
-                  {notifications.filter(n => n.unread).length}
-                </span>
+            <div
+              className={`search-container ${isSearchExpanded ? "expanded" : ""}`}
+            >
+              {!isMobile && (
+                <>
+                  <SearchOutlined />
+                  <input
+                    type="text"
+                    placeholder="Search users, transactions..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </>
+              )}
+
+              {isMobile && isSearchExpanded && (
+                <div className="mobile-search-input">
+                  <SearchOutlined />
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                  />
+                  <button
+                    className="close-search"
+                    onClick={() => setIsSearchExpanded(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+
+              {isMobile && !isSearchExpanded && (
+                <button
+                  className="mobile-search-btn"
+                  onClick={() => setIsSearchExpanded(true)}
+                >
+                  <SearchOutlined />
+                </button>
               )}
             </div>
-            
+
+            <div className="notification-bell">
+              <BellOutlined />
+              <span className="notification-badge">3</span>
+            </div>
+
             <div className="user-dropdown">
-              <div className="avatar-small" style={{ backgroundColor: '#667eea' }}>
+              <div
+                className="avatar-small"
+                style={{ backgroundColor: "#667eea" }}
+              >
                 A
               </div>
-              <CaretDownOutlined />
+              {!isMobile && <CaretDownOutlined />}
             </div>
           </div>
         </div>
 
         {/* Stats Cards Grid */}
         <div className="stats-grid">
-          <StatCard 
-            title="Total Users" 
-            value={stats.totalUsers} 
+          <StatCard
+            title="Total Users"
+            value={stats.totalUsers}
             change={12.5}
             icon={<TeamOutlined />}
             color="#667eea"
           />
-          
-          <StatCard 
-            title="Active Users" 
-            value={stats.activeUsers} 
+
+          <StatCard
+            title="Active Users"
+            value={stats.activeUsers}
             change={8.2}
             icon={<UserOutlined />}
             color="#10b981"
           />
-          
-          <StatCard 
-            title="Total Revenue" 
-            value={stats.totalRevenue} 
+
+          <StatCard
+            title="Total Revenue"
+            value={stats.totalRevenue}
             change={15.3}
             icon={<DollarOutlined />}
             color="#f59e0b"
+            prefix="$"
           />
-          
-          <StatCard 
-            title="Avg Balance" 
-            value={stats.avgBalance} 
+
+          <StatCard
+            title="Avg Balance"
+            value={stats.avgBalance}
             change={5.7}
             icon={<WalletOutlined />}
             color="#9f7aea"
+            prefix="$"
           />
         </div>
 
-        {/* Main Content Area */}
-        <div className="content-grid">
-          {/* Users Table */}
-          <div className="content-card table-section">
-            <div className="card-header">
-              <h2>Users Overview</h2>
-              <button className="btn-primary">
-                <PlusOutlined />
-                Add User
+        {/* Filters Section */}
+        <div className="filters-section">
+          <div className="filter-tabs">
+            {filterOptions.map((filter) => (
+              <button
+                key={filter.id}
+                className={`filter-tab ${activeFilter === filter.id ? "active" : ""}`}
+                onClick={() => setActiveFilter(filter.id)}
+              >
+                {filter.label}
+                {filter.id === "all" && (
+                  <span className="filter-count">{users.length}</span>
+                )}
               </button>
+            ))}
+          </div>
+
+          <div className="filter-actions">
+            <button className="btn-icon">
+              <FilterOutlined />
+              <span>More Filters</span>
+            </button>
+            <button className="btn-icon">
+              <DownloadOutlined />
+              <span>Export</span>
+            </button>
+            <button className="btn-primary">
+              <PlusOutlined />
+              <span>Add User</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content Area - Cards Grid */}
+        <div className="content-grid">
+          {/* Users Cards Section */}
+          <div className="users-section">
+            <div className="section-header">
+              <h2>Users Overview</h2>
+              <div className="results-info">
+                <span className="results-count">
+                  Showing {filteredUsers.length} of {users.length} users
+                </span>
+                {(searchQuery || activeFilter !== "all") && (
+                  <button
+                    className="btn-text"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setActiveFilter("all");
+                    }}
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
             </div>
-            
-            <div className="table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Email</th>
-                    <th>Status</th>
-                    <th>Balance</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id}>
-                      <td>
-                        <div className="user-info">
-                          <div className="avatar" style={{ backgroundColor: user.avatarColor }}>
-                            {user.name.charAt(0)}
-                          </div>
-                          <div>
-                            <div className="user-name">{user.name}</div>
-                            <div className="user-date">Joined {user.registration}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>{user.email}</td>
-                      <td>{getStatusBadge(user.status)}</td>
-                      <td className="balance">{user.balance}</td>
-                      <td>
-                        <div className="action-btns">
-                          <button className="action-btn view" title="View">
-                            <EyeOutlined />
-                          </button>
-                          <button className="action-btn edit" title="Edit">
-                            <EditOutlined />
-                          </button>
-                          <button className="action-btn delete" title="Delete">
-                            <DeleteOutlined />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {filteredUsers.length === 0 && (
+
+            {filteredUsers.length > 0 ? (
+              <div className="users-grid">
+                {filteredUsers.map((user) => (
+                  <UserCard key={user.id} user={user} />
+                ))}
+              </div>
+            ) : (
               <div className="empty-state">
                 <UserOutlined />
-                <p>No users found matching your search</p>
+                <h3>No users found</h3>
+                <p>
+                  {searchQuery
+                    ? "No users match your search criteria"
+                    : "No users available with the selected filter"}
+                </p>
+                <button
+                  className="btn-primary"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setActiveFilter("all");
+                  }}
+                >
+                  Clear Filters
+                </button>
               </div>
             )}
           </div>
 
-          {/* Recent Activity */}
-          <div className="content-card activity-section">
-            <div className="card-header">
-              <h2>Recent Activity</h2>
-              <button className="btn-text">View All</button>
-            </div>
-            
-            <div className="activity-list">
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className="activity-item">
-                  <div className="activity-icon">
-                    <div className="avatar-small" style={{ backgroundColor: '#667eea' }}>
-                      {activity.user.charAt(0)}
-                    </div>
-                  </div>
-                  <div className="activity-content">
-                    <div className="activity-title">
-                      <span className="user-name">{activity.user}</span>
-                      <span className="activity-action">{activity.action}</span>
-                      {activity.amount && (
-                        <span className="activity-amount">{activity.amount}</span>
-                      )}
-                    </div>
-                    <div className="activity-time">{activity.time}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Sidebar Cards */}
+          <div className="sidebar-cards">
+            {/* Recent Activity Card */}
+            <div className="sidebar-card activity-card">
+              <div className="card-header">
+                <h2>Recent Activity</h2>
+                <button className="btn-text">View All</button>
+              </div>
 
-          {/* Quick Stats */}
-          <div className="content-card quick-stats">
-            <div className="card-header">
-              <h2>Quick Stats</h2>
+              <div className="activity-list">
+                {recentActivities.map((activity) => (
+                  <ActivityCard key={activity.id} activity={activity} />
+                ))}
+              </div>
             </div>
-            
-            <div className="stats-list">
-              <div className="stat-item">
-                <div className="stat-label">
-                  <span className="stat-dot" style={{ backgroundColor: '#667eea' }}></span>
-                  <span>New Users Today</span>
-                </div>
-                <div className="stat-value">24</div>
+
+            {/* Quick Stats Card */}
+            <div className="sidebar-card quick-stats-card">
+              <div className="card-header">
+                <h2>Quick Stats</h2>
+                <span className="update-time">Updated just now</span>
               </div>
-              
-              <div className="stat-item">
-                <div className="stat-label">
-                  <span className="stat-dot" style={{ backgroundColor: '#10b981' }}></span>
-                  <span>Pending Transactions</span>
+
+              <div className="stats-list">
+                <div className="stat-item">
+                  <div className="stat-label">
+                    <span
+                      className="stat-dot"
+                      style={{ backgroundColor: "#667eea" }}
+                    ></span>
+                    <span>New Users Today</span>
+                  </div>
+                  <div className="stat-value">{stats.newUsersToday}</div>
                 </div>
-                <div className="stat-value">{stats.pendingTransactions}</div>
-              </div>
-              
-              <div className="stat-item">
-                <div className="stat-label">
-                  <span className="stat-dot" style={{ backgroundColor: '#f59e0b' }}></span>
-                  <span>Active Investments</span>
+
+                <div className="stat-item">
+                  <div className="stat-label">
+                    <span
+                      className="stat-dot"
+                      style={{ backgroundColor: "#10b981" }}
+                    ></span>
+                    <span>Pending Transactions</span>
+                  </div>
+                  <div className="stat-value">{stats.pendingTransactions}</div>
                 </div>
-                <div className="stat-value">89</div>
-              </div>
-              
-              <div className="stat-item">
-                <div className="stat-label">
-                  <span className="stat-dot" style={{ backgroundColor: '#9f7aea' }}></span>
-                  <span>Withdrawals Today</span>
+
+                <div className="stat-item">
+                  <div className="stat-label">
+                    <span
+                      className="stat-dot"
+                      style={{ backgroundColor: "#f59e0b" }}
+                    ></span>
+                    <span>Active Investments</span>
+                  </div>
+                  <div className="stat-value">{stats.activeInvestments}</div>
                 </div>
-                <div className="stat-value">12</div>
+
+                <div className="stat-item">
+                  <div className="stat-label">
+                    <span
+                      className="stat-dot"
+                      style={{ backgroundColor: "#9f7aea" }}
+                    ></span>
+                    <span>Withdrawals Today</span>
+                  </div>
+                  <div className="stat-value">{stats.withdrawalsToday}</div>
+                </div>
+
+                <div className="stat-item">
+                  <div className="stat-label">
+                    <span
+                      className="stat-dot"
+                      style={{ backgroundColor: "#4299e1" }}
+                    ></span>
+                    <span>Deposit Requests</span>
+                  </div>
+                  <div className="stat-value">{stats.depositRequests}</div>
+                </div>
               </div>
             </div>
           </div>
