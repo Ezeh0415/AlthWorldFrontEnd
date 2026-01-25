@@ -64,6 +64,7 @@ const Withdraw = () => {
 
       if (data.data && Array.isArray(data.data)) {
         setWalletData(data.data);
+        console.log(data.data);
       } else {
         setWalletData([]);
       }

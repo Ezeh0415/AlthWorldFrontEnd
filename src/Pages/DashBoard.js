@@ -60,8 +60,6 @@ const Dashboard = () => {
       const transformedData = transformApiData(data);
       setDashboardData(transformedData);
 
-      console.log("transform", transformedData);
-
       // Calculate derived stats
       calculateStats(transformedData);
     } catch (err) {
