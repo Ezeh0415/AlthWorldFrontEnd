@@ -209,6 +209,7 @@ body {
   padding: 4px 12px;
   background: var(--background-dark);
   border-radius: 4px;
+  -webkit-user-select: none;
   user-select: none;
 }
 

@@ -33,6 +33,7 @@ const Wallet = () => {
     totalDeposits: 0,
     totalWithdrawals: 0,
     totalProfits: 0,
+    pendingWithdraw: 0,
   });
   const [transactions, setTransactions] = useState([]);
   const [useMockData, setUseMockData] = useState(false);
@@ -65,6 +66,7 @@ const Wallet = () => {
         balance: data.wallet?.balance || 0,
         invBalance: data.wallet?.invBalance || 0,
         pending: data.wallet?.pending || 0,
+        pendingWithdraw: data.wallet?.pendingWithdraw || 0,
       };
 
       setWalletData(transformedData);
@@ -368,6 +370,24 @@ const Wallet = () => {
                 <div className="metric-change positive">
                   +{formatCurrency(walletData.invBalance)}
                   <span>active</span>
+                </div>
+              </div>
+
+              <div className="metric-card">
+                <div className="metric-header">
+                  <div
+                    className="metric-icon"
+                    style={{
+                      background: "rgba(237, 137, 54, 0.1)",
+                      color: "#ed8936",
+                    }}
+                  >
+                    <ClockCircleOutlined />
+                  </div>
+                  <span className="metric-title">Pending withdrawal</span>
+                </div>
+                <div className="metric-value pending">
+                  {formatCurrency(walletData.pendingWithdraw)}
                 </div>
               </div>
 

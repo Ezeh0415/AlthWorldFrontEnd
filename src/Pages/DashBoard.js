@@ -60,12 +60,11 @@ const Dashboard = () => {
       const transformedData = transformApiData(data);
       setDashboardData(transformedData);
 
-      // console.log(transformedData)
+      console.log("transform", transformedData);
 
       // Calculate derived stats
       calculateStats(transformedData);
     } catch (err) {
-      console.error("API Error:", err);
       setError(err.message || "Failed to load dashboard data");
       // Fallback to mock data
       const mockData = generateMockData();
@@ -210,7 +209,7 @@ const Dashboard = () => {
   const getTransactionIcon = (type) => {
     const icons = {
       deposit: <ArrowDownRight style={{ color: "#22c55e" }} />,
-      withdrawal: <ArrowUpRight style={{ color: "#ef4444" }} />,
+      withdraw: <ArrowUpRight style={{ color: "#ef4444" }} />,
       investment: <TrendingUp style={{ color: "#3b82f6" }} />,
       profit: <PieChart style={{ color: "#10b981" }} />,
       referral: <RocketOutlined style={{ color: "#8b5cf6" }} />,
@@ -340,6 +339,12 @@ const Dashboard = () => {
                   <span className="detail-label">Investment Return</span>
                   <span className="detail-value">
                     {formatCurrency(dashboardData.wallet.invBalance)}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Pending Withdrawal</span>
+                  <span className="detail-value">
+                    {formatCurrency(dashboardData.wallet.pendingWithdraw)}
                   </span>
                 </div>
                 <div className="detail-item">
@@ -502,8 +507,8 @@ const Dashboard = () => {
                           {transaction.description ||
                             (transaction.type === "deposit"
                               ? "Deposit"
-                              : transaction.type === "withdrawal"
-                                ? "Withdrawal"
+                              : transaction.type === "withdraw"
+                                ? "Withdraw"
                                 : transaction.type === "investment"
                                   ? "Investment"
                                   : transaction.type === "profit"
@@ -517,7 +522,7 @@ const Dashboard = () => {
                       <div className="dashboard__transaction-details">
                         <span
                           className={`dashboard__transaction-amount dashboard__transaction-amount--${
-                            transaction.type === "withdrawal"
+                            transaction.type === "withdraw"
                               ? "negative"
                               : "positive"
                           }`}
@@ -525,7 +530,8 @@ const Dashboard = () => {
                           {transaction.type === "withdrawal" ? "-" : "+"}
                           {formatCurrency(
                             transaction.requestedAmount ||
-                              transaction.creditedAmount,
+                              transaction.creditedAmount ||
+                              transaction.amount,
                           )}
                         </span>
                         {getStatusBadge(transaction.status)}

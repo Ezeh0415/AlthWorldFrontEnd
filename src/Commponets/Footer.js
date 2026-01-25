@@ -4,214 +4,278 @@ import {
   TwitterOutlined,
   InstagramOutlined,
   LinkedinOutlined,
-  YoutubeOutlined,
   MailOutlined,
   PhoneOutlined,
   EnvironmentOutlined,
-  SafetyOutlined,
   LockOutlined,
   GlobalOutlined,
   CopyrightOutlined,
-  HeartOutlined,
+  ArrowRightOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import "../styles/Footer.css";
-import BackToTopButton from "./BackToTopButton";
+import logo from "../Assets/ChatGPT Image Jan 22, 2026, 12_37_21 AM.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-  const quickLinks = [
+  const companyLinks = [
     { name: "About Us", path: "/about" },
     { name: "Investment Plans", path: "/plans" },
     { name: "How It Works", path: "/how-it-works" },
-    { name: "FAQs", path: "/faq" },
-    { name: "Support Center", path: "/support" },
-    { name: "Contact Us", path: "/contact" },
   ];
 
   const legalLinks = [
     { name: "Privacy Policy", path: "/privacy" },
     { name: "Terms of Service", path: "/terms" },
     { name: "Cookie Policy", path: "/cookies" },
-    { name: "AML Policy", path: "/aml" },
-    { name: "Risk Disclosure", path: "/risk" },
-    { name: "Legal Documents", path: "/legal" },
+    { name: "Legal", path: "/legal" },
+    { name: "Compliance", path: "/compliance" },
+    { name: "Disclosures", path: "/disclosures" },
   ];
 
-  const contactInfo = [
-    { icon: <MailOutlined />, text: "support@cryptoinvest.com" },
-    { icon: <PhoneOutlined />, text: "+1 (555) 123-4567" },
-    { icon: <EnvironmentOutlined />, text: "123 Crypto Street, Digital City" },
+  const securityFeatures = [
+    {
+      name: "256-bit SSL",
+      icon: <LockOutlined className="footer__security-icon" />,
+    },
+    {
+      name: "Regulated",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="1.5"
+          stroke="currentColor"
+          className="footer__shield-icon"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"
+          />
+        </svg>
+      ),
+    },
+    {
+      name: "Insurance",
+      icon: <SafetyCertificateOutlined className="footer__insurance-icon" />,
+    },
   ];
 
   const socialMedia = [
-    { icon: <FacebookOutlined />, name: "Facebook", url: "#" },
-    { icon: <TwitterOutlined />, name: "Twitter", url: "#" },
-    { icon: <InstagramOutlined />, name: "Instagram", url: "#" },
-    { icon: <LinkedinOutlined />, name: "LinkedIn", url: "#" },
-    { icon: <YoutubeOutlined />, name: "YouTube", url: "#" },
-  ];
-
-  const securityBadges = [
-    { icon: <SafetyOutlined />, text: "SSL Secured" },
-    { icon: <LockOutlined />, text: "256-bit Encryption" },
-    { icon: <GlobalOutlined />, text: "Global Compliance" },
+    {
+      icon: <FacebookOutlined className="footer__social-icon" />,
+      name: "Facebook",
+      url: "#",
+    },
+    {
+      icon: <TwitterOutlined className="footer__social-icon" />,
+      name: "Twitter",
+      url: "#",
+    },
+    {
+      icon: <InstagramOutlined className="footer__social-icon" />,
+      name: "Instagram",
+      url: "#",
+    },
+    {
+      icon: <LinkedinOutlined className="footer__social-icon" />,
+      name: "LinkedIn",
+      url: "#",
+    },
   ];
 
   const newsletterSignup = (e) => {
     e.preventDefault();
     const email = e.target.email.value;
     if (email) {
-      alert(`Thank you for subscribing with: ${email}`);
+      console.log("Subscribed with:", email);
       e.target.reset();
     }
   };
 
   return (
-    <footer className="footer">
-      {/* Top Section */}
-      <div className="footer-top">
-        <div className="footer-container">
-          <div className="footer-section about-section">
-            <div className="footer-logo">
-              <h2>AlthWorld</h2>
-              <p className="tagline">
-                Secure Your Future with Smart Investments
-              </p>
+    <footer className="footer__container">
+      {/* Main Footer Content */}
+      <div className="footer__main-content">
+        <div className="footer__grid-container">
+          {/* Brand Section */}
+          <div className="footer__brand-section">
+            <div className="footer__logo-container">
+              <img
+                src={logo}
+                alt="Crypto Invest"
+                className="footer__logo-img"
+              />
+              <p className="footer__tagline">Secure • Smart • Profitable</p>
             </div>
-            <p className="company-description">
-              We provide secure, transparent, and profitable investment
-              opportunities in the cryptocurrency market. Join thousands of
-              satisfied investors growing their wealth with us.
+            <p className="footer__company-description">
+              Professional cryptocurrency investment platform with
+              institutional-grade security and transparent returns.
             </p>
-            <div className="security-badges">
-              {securityBadges.map((badge, index) => (
-                <div key={index} className="security-badge">
-                  {badge.icon}
-                  <span>{badge.text}</span>
-                </div>
-              ))}
+
+            {/* Security Badges */}
+            <div className="footer__security-section">
+              <h4 className="footer__security-title">Security & Compliance</h4>
+              <div className="footer__badges-grid">
+                {securityFeatures.map((feature, index) => (
+                  <div key={index} className="footer__security-badge">
+                    <span className="footer__badge-icon">{feature.icon}</span>
+                    <span className="footer__badge-text">{feature.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Social Media */}
+            <div className="footer__social-section">
+              <h4 className="footer__social-title">Connect With Us</h4>
+              <div className="footer__social-icons">
+                {socialMedia.map((social, index) => (
+                  <a
+                    key={index}
+                    href={social.url}
+                    className="footer__social-link"
+                    aria-label={social.name}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {social.icon}
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="footer-section links-section">
-            <h3 className="footer-section-title">Quick Links</h3>
-            <ul className="footer-links">
-              {quickLinks.map((link, index) => (
-                <li key={index}>
-                  <a href={link.path}>{link.name}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="footer-section legal-section">
-            <h3 className="footer-section-title">Legal</h3>
-            <ul className="footer-links">
-              {legalLinks.map((link, index) => (
-                <li key={index}>
-                  <a href={link.path}>{link.name}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="footer-section contact-section">
-            <h3 className="footer-section-title">Contact Us</h3>
-            <div className="contact-info">
-              {contactInfo.map((info, index) => (
-                <div key={index} className="contact-item">
-                  {info.icon}
-                  <span>{info.text}</span>
-                </div>
-              ))}
+          {/* Links Sections */}
+          <div className="footer__links-grid">
+            <div className="footer__links-section">
+              <h3 className="footer__section-title">Company</h3>
+              <ul className="footer__links-list">
+                {companyLinks.map((link, index) => (
+                  <li key={index} className="footer__list-item">
+                    <a href={link.path} className="footer__link">
+                      <ArrowRightOutlined className="footer__link-icon" />
+                      {link.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <div className="newsletter">
-              <h4>Stay Updated</h4>
-              <form onSubmit={newsletterSignup} className="newsletter-form">
+            <div className="footer__links-section">
+              <h3 className="footer__section-title">Legal</h3>
+              <ul className="footer__links-list">
+                {legalLinks.map((link, index) => (
+                  <li key={index} className="footer__list-item">
+                    <a href={link.path} className="footer__link">
+                      <ArrowRightOutlined className="footer__link-icon" />
+                      {link.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Newsletter Section */}
+          <div className="footer__newsletter-section">
+            <h3 className="footer__section-title">Stay Updated</h3>
+            <p className="footer__newsletter-description">
+              Get weekly market insights and investment strategies.
+            </p>
+
+            <form
+              onSubmit={newsletterSignup}
+              className="footer__newsletter-form"
+            >
+              <div className="footer__input-group">
+                <MailOutlined className="footer__input-icon" />
                 <input
                   type="email"
                   name="email"
-                  placeholder="Enter your email"
+                  placeholder="Your email address"
                   required
+                  className="footer__newsletter-input"
                 />
-                <button type="submit" className="subscribe-btn">
+                <button type="submit" className="footer__subscribe-btn">
                   Subscribe
                 </button>
-              </form>
-              <p className="newsletter-note">
-                Get the latest investment insights and market updates
-              </p>
+              </div>
+            </form>
+
+            {/* Contact Info */}
+            <div className="footer__contact-info">
+              <div className="footer__contact-item">
+                <PhoneOutlined className="footer__contact-icon" />
+                <span className="footer__contact-text">+1 (555) 123-4567</span>
+              </div>
+              <div className="footer__contact-item">
+                <MailOutlined className="footer__contact-icon" />
+                <span className="footer__contact-text">
+                  support@cryptoinvest.com
+                </span>
+              </div>
+              <div className="footer__contact-item">
+                <EnvironmentOutlined className="footer__contact-icon" />
+                <span className="footer__contact-text">
+                  Global Headquarters
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Middle Section - Social Media */}
-      <div className="footer-middle">
-        <div className="footer-container">
-          <div className="social-media">
-            <h4>Follow Us</h4>
-            <div className="social-icons">
-              {socialMedia.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.url}
-                  className="social-icon"
-                  aria-label={social.name}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {social.icon}
-                </a>
-              ))}
-            </div>
+      {/* Footer Bottom */}
+      <div className="footer__bottom-bar">
+        <div className="footer__bottom-container">
+          <div className="footer__copyright">
+            <CopyrightOutlined className="footer__copyright-icon" />
+            <span className="footer__copyright-text">
+              {currentYear} AlthWorld. All rights reserved.
+            </span>
+          </div>
+
+          <div className="footer__bottom-links">
+            <a href="/privacy" className="footer__bottom-link">
+              Privacy
+            </a>
+            <span className="footer__link-separator">•</span>
+            <a href="/terms" className="footer__bottom-link">
+              Terms
+            </a>
+            <span className="footer__link-separator">•</span>
+            <a href="/cookies" className="footer__bottom-link">
+              Cookies
+            </a>
+            <span className="footer__link-separator">•</span>
+            <a href="/sitemap" className="footer__bottom-link">
+              Sitemap
+            </a>
+          </div>
+
+          <div className="footer__global-info">
+            <GlobalOutlined className="footer__global-icon" />
+            <span className="footer__global-text">Available worldwide</span>
           </div>
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="footer-bottom">
-        <div className="footer-container">
-          <div className="copyright">
-            <CopyrightOutlined />
-            <span>{currentYear} AlthWorld. All rights reserved.</span>
-          </div>
-
-          <div className="footer-bottom-links">
-            <a href="/sitemap">Sitemap</a>
-            <span className="separator">|</span>
-            <a href="/accessibility">Accessibility</a>
-            <span className="separator">|</span>
-            <a href="/responsible-investing">Responsible Investing</a>
-          </div>
-
-          <div className="made-with">
-            <span>Made with</span>
-            <HeartOutlined className="heart-icon" />
-            <span>for investors worldwide</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Disclaimer */}
-      <div className="footer-disclaimer">
-        <div className="footer-container">
-          <p>
-            <strong>Risk Warning:</strong> Investing in cryptocurrencies
-            involves substantial risk of loss and is not suitable for every
-            investor. Past performance is not indicative of future results.
-            Please review our <a href="/risk-disclosure">Risk Disclosure</a>{" "}
-            before investing.
-          </p>
-          <p className="regulatory-info">
-            Crypto Invest is registered with the appropriate regulatory
-            authorities. Registration number: CI-2024-001
+      {/* Risk Disclaimer */}
+      <div className="footer__disclaimer">
+        <div className="footer__disclaimer-container">
+          <p className="footer__disclaimer-text">
+            <strong className="footer__disclaimer-strong">Risk Warning:</strong>{" "}
+            Investing in digital assets carries significant risk. The value of
+            investments can go down as well as up. Past performance is not
+            indicative of future results. This platform is intended for
+            experienced investors who understand these risks.
           </p>
         </div>
       </div>
-      <BackToTopButton />
     </footer>
   );
 };

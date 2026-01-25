@@ -13,6 +13,7 @@ import AdminLogin from "./Pages/Admin/AdminLogin";
 import AdminHomePage from "./Pages/Admin/AdminHomePage";
 import AdminTransaction from "./Pages/Admin/AdminTransaction";
 import Withdraw from "./Pages/Withdraw";
+import AdminAddWallet from "./Pages/Admin/AdminAddWallet";
 
 function App() {
   return (
@@ -93,6 +94,15 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminTransaction />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/adminAddWallet"
+          element={
+            <ProtectedRoute>
+              <AdminAddWallet />
             </ProtectedRoute>
           }
         />

@@ -61,7 +61,6 @@ const Withdraw = () => {
     try {
       setIsFetching(true);
       const data = await ApiService.getWallets();
-      console.log("Wallet Types Data:", data);
 
       if (data.data && Array.isArray(data.data)) {
         setWalletData(data.data);
@@ -80,7 +79,6 @@ const Withdraw = () => {
   const fetchUserData = async () => {
     try {
       const data = await ApiService.getDashboardData();
-      console.log("Dashboard Data:", data);
 
       if (data?.wallet) {
         const wallet = data.wallet;
@@ -366,26 +364,23 @@ const Withdraw = () => {
     try {
       setLoading(true);
 
-      const amountInCents = parseFloat(amount) * 100;
+      //   const amountInCents = parseFloat(amount);
 
-      const withdrawDatas = {
-        amount: amountInCents,
-        currency: "USD",
-        walletAddress: selectedWallet.address,
-        network: selectedWallet.network,
-        withdrawalMethod: "crypto",
-      };
+      // const withdrawDatas = {
+      //   amount: amount,
+      //   currency: "USD",
+      //   walletAddress: selectedWallet.address,
+      //   network: selectedWallet.network,
+      //   withdrawalMethod: "crypto",
+      // };
 
       const withdrawData = {
-        amount: amountInCents,
+        amount: amount,
         paymentType: selectedWallet.network,
         walletAddress: selectedWallet.address,
       };
 
-      console.log("Sending withdrawal data:", withdrawDatas);
-
       const response = await ApiServices.Withdraw(withdrawData);
-      console.log("Withdrawal response:", response);
 
       if (response.success || response._id) {
         setStage("success");
@@ -428,12 +423,17 @@ const Withdraw = () => {
   // Calculate fee and net amount
   const calculateWithdrawalDetails = () => {
     const amountNum = parseFloat(amount) || 0;
-    const feePercentage = 0.02; // 2% fee
+    const feePercentage = 0.0005; // 0.05% fee (changed from 2%)
     const minFee = 5; // Minimum $5 fee
-    const maxFee = 50; // Maximum $50 fee
+    const maxFee = 1000; // Maximum $50 fee
 
+    // Calculate fee as 0.05% of the withdrawal amount
     let fee = amountNum * feePercentage;
+
+    // Apply minimum and maximum fee limits
     fee = Math.max(minFee, Math.min(fee, maxFee));
+
+    // Calculate net amount after deducting fee
     const netAmount = amountNum - fee;
 
     return { fee, netAmount };

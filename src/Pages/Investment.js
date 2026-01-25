@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import {
-  LineChartOutlined,
   DollarOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
@@ -10,9 +9,6 @@ import {
   EyeInvisibleOutlined,
   PlusOutlined,
   InfoCircleOutlined,
-  WalletOutlined,
-  ArrowUpOutlined,
-  PercentageOutlined,
   ReloadOutlined,
   SearchOutlined,
   ExclamationCircleOutlined,
@@ -22,14 +18,14 @@ import {
   TrophyOutlined,
   BarChartOutlined,
   QuestionCircleOutlined,
-  ArrowDownOutlined, // For deposits
-  // For withdrawals
-  CheckCircleFilled, // For confirmed deposits
+  FundOutlined,
+  HistoryOutlined,
 } from "@ant-design/icons";
 import "../styles/Investment.css";
 import Header from "../Commponets/Header";
 import Footer from "../Commponets/Footer";
 import ApiService from "../Commponets/ApiService";
+import ApiServices from "../Commponets/ApiService";
 
 const Investments = () => {
   const [investments, setInvestments] = useState([]);
@@ -42,6 +38,7 @@ const Investments = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
+  const [activeFilter, setActiveFilter] = useState("all");
 
   /* ------------------ PLANS ------------------ */
   const investmentPlans = [
@@ -49,7 +46,7 @@ const Investments = () => {
       id: "basic",
       name: "Basic Plan",
       minAmount: 100,
-      maxAmount: 1000,
+      maxAmount: 3000,
       roi: 2,
       duration: 30,
       color: "#10B981",
@@ -61,7 +58,7 @@ const Investments = () => {
       id: "standard",
       name: "Standard Plan",
       minAmount: 500,
-      maxAmount: 2000,
+      maxAmount: 8000,
       roi: 4,
       duration: 60,
       color: "#3B82F6",
@@ -73,7 +70,7 @@ const Investments = () => {
       id: "premium",
       name: "Premium Plan",
       minAmount: 2000,
-      maxAmount: 5000,
+      maxAmount: 15000,
       roi: 6,
       duration: 90,
       color: "#8B5CF6",
@@ -85,7 +82,7 @@ const Investments = () => {
       id: "ultimate",
       name: "Ultimate Plan",
       minAmount: 5000,
-      maxAmount: 50000,
+      maxAmount: 80000,
       roi: 8,
       duration: 120,
       color: "#EC4899",
@@ -101,18 +98,13 @@ const Investments = () => {
       setLoading(true);
       setError("");
 
-      // Fetch dashboard data
       const data = await ApiService.getDashboardData();
       setDashboardData(data);
-      console.log(data);
 
-      // Extract investments from dashboard data
       let apiInvestments = [];
 
       if (data.investments && Array.isArray(data.investments)) {
-        // Transform your investment data to match component structure
         apiInvestments = data.investments.map((inv, index) => {
-          // Extract data from your backend structure
           const amount = inv.amount || 0;
           const roi =
             inv.roi || inv.investmentType === "basic"
@@ -125,7 +117,6 @@ const Investments = () => {
                     ? 8
                     : 2;
 
-          // Calculate total returns if not present
           const totalReturns = inv.profits || inv.totalReturns || 0;
           const currentValue = amount + totalReturns;
 
@@ -164,7 +155,32 @@ const Investments = () => {
     fetchUserInvestments();
   }, []);
 
-  /* ------------------ FILTER DEPOSITS ------------------ */
+  /* ------------------ FILTER INVESTMENTS ------------------ */
+  const filteredInvestments = useMemo(() => {
+    let filtered = investments;
+
+    // Apply status filter
+    if (activeFilter !== "all") {
+      filtered = filtered.filter(
+        (inv) => inv.status.toLowerCase() === activeFilter.toLowerCase(),
+      );
+    }
+
+    // Apply search filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (inv) =>
+          inv.plan?.toLowerCase().includes(term) ||
+          inv._id?.toLowerCase().includes(term) ||
+          inv.investmentType?.toLowerCase().includes(term),
+      );
+    }
+
+    return filtered;
+  }, [investments, activeFilter, searchTerm]);
+
+  /* ------------------ RECENT DEPOSITS ------------------ */
   const recentDeposits = useMemo(() => {
     if (
       !dashboardData?.transactions ||
@@ -173,7 +189,6 @@ const Investments = () => {
       return [];
     }
 
-    // Filter only deposit transactions
     const deposits = dashboardData.transactions
       .filter((txn) => txn.type === "deposit")
       .sort(
@@ -181,7 +196,7 @@ const Investments = () => {
           new Date(b.createdAt || b.date || 0) -
           new Date(a.createdAt || a.date || 0),
       )
-      .slice(0, 5); // Get last 5 deposits
+      .slice(0, 5);
 
     return deposits;
   }, [dashboardData]);
@@ -225,25 +240,7 @@ const Investments = () => {
     return stats;
   }, [investments, recentDeposits]);
 
-  /* ------------------ COMING SOON COMPONENT ------------------ */
-  const ComingSoonPlaceholder = ({
-    message = "Coming Soon",
-    iconSize = 48,
-  }) => (
-    <div className="coming-soon-placeholder">
-      <QuestionCircleOutlined
-        style={{
-          fontSize: iconSize,
-          color: "#6B7280",
-          opacity: 0.5,
-        }}
-      />
-      <span className="coming-soon-text">{message}</span>
-    </div>
-  );
-
-  /* ------------------ HELPERS ------------------ */
-
+  /* ------------------ HELPER FUNCTIONS ------------------ */
   const formatCurrency = (v) => {
     if (!showValues) return "$●●●●";
     const amount = v || 0;
@@ -259,19 +256,12 @@ const Investments = () => {
   const formatInvestCurrency = (v) => {
     if (!showValues) return "$●●●●";
     const amount = v || 0;
-    // const amountInDollars = amount / 100;
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount);
-  };
-
-  const formatCompactCurrency = (v) => {
-    const amount = v || 0;
-    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
-    return `$${amount}`;
   };
 
   const formatPercentage = (v) => {
@@ -377,179 +367,172 @@ const Investments = () => {
         return type || "Investment Plan";
     }
   };
+  //   switch (status?.toLowerCase()) {
+  //     case "confirmed":
+  //     case "completed":
+  //     case "success":
+  //       return <CheckCircleFilled style={{ color: "#10b981" }} />;
+  //     case "pending":
+  //       return <ClockCircleOutlined style={{ color: "#f59e0b" }} />;
+  //     case "failed":
+  //     case "cancelled":
+  //       return <CloseCircleOutlined style={{ color: "#ef4444" }} />;
+  //     default:
+  //       return <ClockCircleOutlined style={{ color: "#6b7280" }} />;
+  //   }
+  // };
 
-  const getDepositStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
-      case "confirmed":
-      case "completed":
-      case "success":
-        return <CheckCircleFilled style={{ color: "#10b981" }} />;
-      case "pending":
-        return <ClockCircleOutlined style={{ color: "#f59e0b" }} />;
-      case "failed":
-      case "cancelled":
-        return <CloseCircleOutlined style={{ color: "#ef4444" }} />;
-      default:
-        return <ClockCircleOutlined style={{ color: "#6b7280" }} />;
-    }
-  };
-
-  const getDepositStatusText = (status) => {
-    switch (status?.toLowerCase()) {
-      case "confirmed":
-      case "completed":
-      case "success":
-        return "Confirmed";
-      case "pending":
-        return "Pending";
-      case "failed":
-      case "cancelled":
-        return "Failed";
-      default:
-        return "Processing";
-    }
-  };
+  // const getDepositStatusText = (status) => {
+  //   switch (status?.toLowerCase()) {
+  //     case "confirmed":
+  //     case "completed":
+  //     case "success":
+  //       return "Confirmed";
+  //     case "pending":
+  //       return "Pending";
+  //     case "failed":
+  //     case "cancelled":
+  //       return "Failed";
+  //     default:
+  //       return "Processing";
+  //   }
+  // };
 
   /* ------------------ CREATE INVESTMENT ------------------ */
   const handleNewInvestment = async ({ amount, startDate, endDate }) => {
-  setError("");
-  
-  // Validate selected plan exists
-  if (!selectedPlan) {
-    setError("Please select an investment plan");
-    return;
-  }
-  
-  const plan = investmentPlans.find((p) => p.id === selectedPlan);
-  
-  // Validate plan exists
-  if (!plan) {
-    setError("Selected investment plan not found");
-    return;
-  }
-  
-  // Parse amount with better validation
-  const value = parseFloat(amount);
-  
-  // Comprehensive validation
-  if (isNaN(value) || !startDate || !endDate) {
-    setError("All fields are required");
-    return;
-  }
-  
-  // Check for negative or zero amount
-  if (value <= 0) {
-    setError("Investment amount must be greater than 0");
-    return;
-  }
-  
-  // Check min/max amount with better precision
-  if (value < plan.minAmount) {
-    setError(`Minimum investment amount is ${formatCurrency(plan.minAmount)}`);
-    return;
-  }
-  
-  if (value > plan.maxAmount) {
-    setError(`Maximum investment amount is ${formatCurrency(plan.maxAmount)}`);
-    return;
-  }
-  
-  // Validate date range
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Reset time for accurate comparison
-  
-  if (start < today) {
-    setError("Start date cannot be in the past");
-    return;
-  }
-  
-  if (end <= start) {
-    setError("End date must be after start date");
-    return;
-  }
-  
-  // Calculate duration in days
-  const durationDays = Math.round((end - start) / (1000 * 60 * 60 * 24));
-  
-  // Validate against plan duration if applicable
-  if (plan.duration && durationDays < plan.duration) {
-    setError(`Minimum investment duration is ${plan.duration} days`);
-    return;
-  }
-  
-  try {
-    setLoadingInvestment(true);
-    
-    // Prepare data for API
-    const investmentData = {
-      amount: value,
-      roi: plan.roi,
-      investmentType: plan.id,
-      planName: plan.name, // Include plan name for reference
-      investmentStartDate: startDate,
-      investmentEndDate: endDate,
-      duration: durationDays,
-      expectedReturn: value * (plan.roi / 100), // Calculate expected return
-      // userId: dashboardData?.accountStatus?._id || localStorage.getItem("userId"),
-    };
-    
-    console.log("Submitting investment:", investmentData); // For debugging
-    
-    const result = await ApiService.invest(investmentData);
-    
-    // Validate response
-    if (!result || !result.success) {
-      throw new Error(result?.message || "Investment creation failed");
-    }
-    
-    // Reset form state
-    setShowNewInvestmentModal(false);
-    setSelectedPlan("");
     setError("");
-    
-    // Show success message
-    setSuccess(true);
-    
-    
-    
-    // Optional: Show success toast/notification
-    if (result.message) {
-      // Show notification: result.message
-    }
-    
-    return result; // Return result for potential chaining
-    
-  } catch (err) {
-    console.error("Investment creation error:", err);
-    
-    // Better error handling
-    let errorMessage = "Failed to create investment";
-    
-    if (err.response) {
-      // Server responded with error
-      errorMessage = err.response.data?.message || err.response.statusText;
-    } else if (err.request) {
-      // No response received
-      errorMessage = "Network error. Please check your connection.";
-    } else if (err.message) {
-      // Error thrown manually
-      errorMessage = err.message;
-    }
-    
-    setError(errorMessage);
-    
-    // Optional: Log error to monitoring service
-    // logErrorToService(err, { amount, startDate, endDate, planId: selectedPlan });
-    
-    throw err; // Re-throw if parent component needs to handle
-  } finally {
-    setLoadingInvestment(false);
-  }
-};
 
-  /* ------------------ MODAL ------------------ */
+    if (!selectedPlan) {
+      setError("Please select an investment plan");
+      return;
+    }
+
+    const plan = investmentPlans.find((p) => p.id === selectedPlan);
+
+    if (!plan) {
+      setError("Selected investment plan not found");
+      return;
+    }
+
+    const value = parseFloat(amount);
+
+    if (isNaN(value) || !startDate || !endDate) {
+      setError("All fields are required");
+      return;
+    }
+
+    if (value <= 0) {
+      setError("Investment amount must be greater than 0");
+      return;
+    }
+
+    if (value < plan.minAmount) {
+      setError(`Minimum investment amount is $${plan.minAmount}`);
+      return;
+    }
+
+    if (value > plan.maxAmount) {
+      setError(`Maximum investment amount is $${plan.maxAmount}`);
+      return;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (start < today) {
+      setError("Start date cannot be in the past");
+      return;
+    }
+
+    if (end <= start) {
+      setError("End date must be after start date");
+      return;
+    }
+
+    const durationDays = Math.round((end - start) / (1000 * 60 * 60 * 24));
+
+    if (plan.duration && durationDays < plan.duration) {
+      setError(`Minimum investment duration is ${plan.duration} days`);
+      return;
+    }
+
+    try {
+      setLoadingInvestment(true);
+
+      // This is the correct format based on your original function
+      const investmentData = {
+        amount: value,
+        roi: plan.roi,
+        investmentType: plan.id,
+        planName: plan.name,
+        investmentStartDate: startDate,
+        investmentEndDate: endDate,
+        duration: durationDays,
+        expectedReturn: value * (plan.roi / 100),
+        // Add userId if required by backend
+        userId: localStorage.getItem("userId"),
+        // Add other required fields if needed
+        ...(plan.planId && { planId: plan.planId }),
+      };
+
+      console.log("Submitting investment data:", investmentData);
+
+    
+
+      const result = await ApiService.invest(investmentData);
+
+      if (!result || !result.success) {
+        throw new Error(result?.message || "Investment creation failed");
+      }
+
+      setShowNewInvestmentModal(false);
+      setSelectedPlan("");
+      setError("");
+      setSuccess(true);
+      fetchUserInvestments();
+
+      setTimeout(() => setSuccess(false), 3000);
+
+      if (result.message) {
+        // Show notification
+        console.log("Success:", result.message);
+      }
+
+      return result;
+    } catch (err) {
+      console.error("Investment creation error details:", err);
+
+      let errorMessage = "Failed to create investment";
+
+      if (err.response) {
+        errorMessage = err.response.data?.message || err.response.statusText;
+      } else if (err.request) {
+        errorMessage = "Network error. Please check your connection.";
+      } else if (err.message) {
+        // Check for specific error messages
+        if (err.message.includes("500")) {
+          errorMessage = "Server error. Please try again later.";
+        } else if (err.message.includes("401")) {
+          errorMessage = "Session expired. Please login again.";
+          localStorage.clear();
+          window.location.href = "/login";
+        } else if (err.message.includes("Network")) {
+          errorMessage = "Network error. Please check your connection.";
+        } else {
+          errorMessage = err.message;
+        }
+      }
+
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoadingInvestment(false);
+    }
+  };
+
+  /* ------------------ NEW INVESTMENT MODAL ------------------ */
   const NewInvestmentModal = () => {
     const [amount, setAmount] = useState("");
     const [startDate, setStartDate] = useState("");
@@ -580,13 +563,11 @@ const Investments = () => {
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
             <div className="modal-title">
-              <RocketOutlined
-                style={{ color: "#3b82f6", marginRight: "8px" }}
-              />
+              <RocketOutlined className="modal-title-icon" />
               <h3>Create New Investment</h3>
             </div>
             <button
-              className="close-btn"
+              className="modal-close-btn"
               onClick={() => setShowNewInvestmentModal(false)}
             >
               ×
@@ -596,26 +577,26 @@ const Investments = () => {
           <form onSubmit={handleSubmit}>
             <div className="modal-body">
               {error && (
-                <div className="error-message">
+                <div className="modal-error-message">
                   <ExclamationCircleOutlined />
                   <span>{error}</span>
                 </div>
               )}
 
-              <div className="plan-selection">
-                <h4 className="section-title">Select Investment Plan</h4>
-                <div className="plan-options-grid">
+              <div className="plan-selection-section">
+                <h4 className="modal-section-title">Select Investment Plan</h4>
+                <div className="investment-plans-grid">
                   {investmentPlans.map((plan) => (
                     <div
                       key={plan.id}
-                      className={`plan-option-card ${
+                      className={`investment-plan-card ${
                         selectedPlan === plan.id ? "selected" : ""
                       }`}
                       onClick={() => setSelectedPlan(plan.id)}
                     >
                       <div className="plan-card-header">
                         <div
-                          className="plan-icon-wrapper"
+                          className="plan-icon-container"
                           style={{
                             backgroundColor: `${plan.color}20`,
                             color: plan.color,
@@ -626,7 +607,7 @@ const Investments = () => {
                         <div className="plan-title-section">
                           <h5>{plan.name}</h5>
                           <span
-                            className="plan-roi"
+                            className="plan-roi-badge"
                             style={{ color: plan.color }}
                           >
                             {plan.roi}% ROI
@@ -635,21 +616,25 @@ const Investments = () => {
                       </div>
                       <p className="plan-description">{plan.description}</p>
                       <div className="plan-details-grid">
-                        <div className="plan-detail-item">
-                          <span className="detail-label">Min Investment</span>
-                          <span className="detail-value">
+                        <div className="plan-detail">
+                          <span className="plan-detail-label">
+                            Min Investment
+                          </span>
+                          <span className="plan-detail-value">
                             {formatInvestCurrency(plan.minAmount)}
                           </span>
                         </div>
-                        <div className="plan-detail-item">
-                          <span className="detail-label">Duration</span>
-                          <span className="detail-value">
+                        <div className="plan-detail">
+                          <span className="plan-detail-label">Duration</span>
+                          <span className="plan-detail-value">
                             {plan.duration} days
                           </span>
                         </div>
-                        <div className="plan-detail-item">
-                          <span className="detail-label">Max Investment</span>
-                          <span className="detail-value">
+                        <div className="plan-detail">
+                          <span className="plan-detail-label">
+                            Max Investment
+                          </span>
+                          <span className="plan-detail-value">
                             {formatInvestCurrency(plan.maxAmount)}
                           </span>
                         </div>
@@ -660,10 +645,10 @@ const Investments = () => {
               </div>
 
               {selectedPlan && (
-                <div className="investment-details-form">
-                  <h4 className="section-title">Investment Details</h4>
-                  <div className="form-grid">
-                    <div className="form-group">
+                <div className="investment-details-section">
+                  <h4 className="modal-section-title">Investment Details</h4>
+                  <div className="investment-form-grid">
+                    <div className="form-field">
                       <label>Investment Amount *</label>
                       <input
                         type="number"
@@ -676,15 +661,12 @@ const Investments = () => {
                           investmentPlans.find((p) => p.id === selectedPlan)
                             .maxAmount,
                         )}`}
-                        // Remove these lines:
-                        // min={investmentPlans.find((p) => p.id === selectedPlan).minAmount}
-                        // max={investmentPlans.find((p) => p.id === selectedPlan).maxAmount}
                         step="0.01"
                         required
                       />
                     </div>
 
-                    <div className="form-group">
+                    <div className="form-field">
                       <label>Start Date *</label>
                       <input
                         type="date"
@@ -695,7 +677,7 @@ const Investments = () => {
                       />
                     </div>
 
-                    <div className="form-group">
+                    <div className="form-field">
                       <label>End Date *</label>
                       <input
                         type="date"
@@ -736,9 +718,9 @@ const Investments = () => {
                           days
                         </span>
                       </div>
-                      <div className="summary-item total">
+                      <div className="summary-item total-item">
                         <span>Total Investment:</span>
-                        <span className="total-investment">
+                        <span className="total-amount">
                           {amount
                             ? formatInvestCurrency(parseFloat(amount))
                             : "$0"}
@@ -752,7 +734,7 @@ const Investments = () => {
               <div className="modal-actions">
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn-secondary"
                   onClick={() => setShowNewInvestmentModal(false)}
                   disabled={loadingInvestment}
                 >
@@ -760,7 +742,7 @@ const Investments = () => {
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="btn-primary"
                   disabled={
                     !selectedPlan ||
                     !amount ||
@@ -771,7 +753,7 @@ const Investments = () => {
                 >
                   {loadingInvestment ? (
                     <>
-                      <LoadingOutlined spin style={{ marginRight: "8px" }} />
+                      <LoadingOutlined className="loading-icon" />
                       Creating...
                     </>
                   ) : (
@@ -786,80 +768,121 @@ const Investments = () => {
     );
   };
 
+  /* ------------------ COMING SOON COMPONENT ------------------ */
+  const ComingSoonPlaceholder = ({
+    message = "Coming Soon",
+    iconSize = 48,
+  }) => (
+    <div className="coming-soon-placeholder">
+      <QuestionCircleOutlined
+        style={{
+          fontSize: iconSize,
+          color: "#6B7280",
+          opacity: 0.5,
+        }}
+      />
+      <span className="coming-soon-text">{message}</span>
+    </div>
+  );
+
   return (
-    <div className="user-investments-container">
-      {/* Header */}
+    <div className="investment-portfolio">
       <Header />
 
-      {/* Main Content */}
-      <div className="investments-content">
+      <div className="investment-content">
+        {/* Success Notification */}
+        {success && (
+          <div className="success-notification">
+            <CheckCircleOutlined />
+            <span>Investment created successfully!</span>
+          </div>
+        )}
+
         {/* Page Header */}
-        <div className="page-header">
-          <div className="header-left">
-            <div className="page-title">
-              <RocketOutlined className="page-icon" />
+        <div className="portfolio-header">
+          <div className="header-left-content">
+            <div className="header-title-section">
+              <div className="title-icon-container">
+                <FundOutlined className="title-icon" />
+              </div>
               <div>
-                <h1>Investments</h1>
-                <p>Manage and track your investment portfolio</p>
+                <h1 className="portfolio-title">Investment Portfolio</h1>
+                <p className="portfolio-subtitle">
+                  Manage and track your investment portfolio with precision
+                </p>
               </div>
             </div>
           </div>
-          <div className="header-right">
+
+          <div className="header-actions">
+            {/* Mobile New Investment Button */}
             <button
-              className="btn-icon"
+              className="mobile-invest-btn"
+              onClick={() => setShowNewInvestmentModal(true)}
+              aria-label="New Investment"
+            >
+              <PlusOutlined />
+              <span>New</span>
+            </button>
+
+            <button
+              className="visibility-toggle"
               onClick={() => setShowValues(!showValues)}
               aria-label={showValues ? "Hide values" : "Show values"}
             >
               {showValues ? <EyeOutlined /> : <EyeInvisibleOutlined />}
             </button>
-            <button
-              className="btn btn-primary"
+
+            {/* <button
+              className="primary-action-btn"
               onClick={() => setShowNewInvestmentModal(true)}
             >
               <PlusOutlined />
               New Investment
-            </button>
+            </button> */}
           </div>
         </div>
 
         {/* Stats Overview */}
-        <div className="stats-overview-grid">
-          <div className="stat-card-modern total-invested">
-            <div className="stat-icon-container">
+        {/* <div className="portfolio-stats-grid">
+          <div className="stat-card">
+            <div className="stat-icon-wrapper total-invested-icon">
               <WalletOutlined />
             </div>
-            <div className="stat-content">
+            <div className="stat-content-wrapper">
               <div className="stat-label">Total Invested</div>
               <div className="stat-value">
                 {dashboardData?.wallet?.balance
                   ? formatCompactCurrency(dashboardData.wallet.balance)
                   : formatCompactCurrency(userStats.totalInvested)}
               </div>
-              <div className="stat-details">
-                <span className="detail-label">Active Investments:</span>
+              <div className="stat-details-row">
+                <span className="detail-label">Active:</span>
                 <span className="detail-value">{userStats.active}</span>
               </div>
             </div>
           </div>
 
-          <div className="stat-card-modern total-returns">
-            <div className="stat-icon-container">
+          <div className="stat-card">
+            <div className="stat-icon-wrapper total-returns-icon">
               <DollarOutlined />
             </div>
-            <div className="stat-content">
+            <div className="stat-content-wrapper">
               <div className="stat-label">Total Returns</div>
               <div className="stat-value">
                 {dashboardData?.profits
                   ? formatCompactCurrency(dashboardData.totalDeposits)
                   : formatCompactCurrency(userStats.totalReturns)}
               </div>
-              <div className="stat-details">
-                <span className="detail-label">All time</span>
+              <div className="stat-details-row">
+                <span className="detail-label">Growth:</span>
                 <span className="detail-value positive">
-                  <ArrowUpOutlined /> +
-                  {dashboardData?.totalDeposits && dashboardData?.wallet?.balance
+                  <ArrowUpOutlined />
+                  {dashboardData?.totalDeposits &&
+                  dashboardData?.wallet?.balance
                     ? (
-                        (dashboardData.totalDeposits / dashboardData.wallet.balance) *
+                        (dashboardData.totalDeposits /
+                          dashboardData.wallet.balance) *
                         100
                       ).toFixed(1)
                     : userStats.totalInvested > 0
@@ -874,11 +897,11 @@ const Investments = () => {
             </div>
           </div>
 
-          <div className="stat-card-modern portfolio-value">
-            <div className="stat-icon-container">
+          <div className="stat-card">
+            <div className="stat-icon-wrapper portfolio-value-icon">
               <LineChartOutlined />
             </div>
-            <div className="stat-content">
+            <div className="stat-content-wrapper">
               <div className="stat-label">Portfolio Value</div>
               <div className="stat-value">
                 {dashboardData?.wallet?.balance && dashboardData?.profits
@@ -887,10 +910,10 @@ const Investments = () => {
                     )
                   : formatCompactCurrency(userStats.totalPortfolioValue)}
               </div>
-              <div className="stat-details">
-                <span className="detail-label">Current Value</span>
+              <div className="stat-details-row">
+                <span className="detail-label">Current:</span>
                 <span className="detail-value positive">
-                  <ArrowUpOutlined /> +
+                  <ArrowUpOutlined />
                   {dashboardData?.profits && dashboardData?.wallet?.balance
                     ? (
                         (dashboardData.profits / dashboardData.wallet.balance) *
@@ -908,87 +931,107 @@ const Investments = () => {
             </div>
           </div>
 
-          <div className="stat-card-modern average-roi">
-            <div className="stat-icon-container">
+          <div className="stat-card">
+            <div className="stat-icon-wrapper average-roi-icon">
               <PercentageOutlined />
             </div>
-            <div className="stat-content">
+            <div className="stat-content-wrapper">
               <div className="stat-label">Average ROI</div>
               <div className="stat-value">
                 {formatPercentage(userStats.avgROI)}
               </div>
-              <div className="stat-details">
-                <span className="detail-label">Across all investments</span>
+              <div className="stat-details-row">
+                <span className="detail-label">All Investments</span>
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
-        {/* Main Content Area */}
-        <div className="main-content-area">
-          {/* Investments Panel */}
-          <div className="investments-panel">
-            <div className="panel-header">
-              <div className="panel-title">
-                <BarChartOutlined className="panel-icon" />
-                <h3>My Investments</h3>
-                <span className="investment-count">
-                  {investments.length} investments
+        {/* Main Content */}
+        <div className="portfolio-main-content">
+          {/* Investments Section */}
+          <div className="investments-section">
+            <div className="section-header">
+              <div className="section-title-row">
+                <BarChartOutlined className="section-icon" />
+                <h2 className="section-title">My Investments</h2>
+                <span className="investment-count-badge">
+                  {filteredInvestments.length} investments
                 </span>
               </div>
-              <div className="panel-actions">
-                <div className="search-filter-modern">
-                  <SearchOutlined />
+
+              <div className="section-controls">
+                <div className="search-container">
+                  <SearchOutlined className="search-icon" />
                   <input
                     type="text"
+                    className="search-input"
                     placeholder="Search investments..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                   {searchTerm && (
                     <button
-                      className="clear-search"
+                      className="clear-search-btn"
                       onClick={() => setSearchTerm("")}
                     >
                       ×
                     </button>
                   )}
                 </div>
-                <button className="btn-refresh" onClick={fetchUserInvestments}>
+
+                <div className="filter-tabs">
+                  {["all", "active", "completed", "cancelled"].map((filter) => (
+                    <button
+                      key={filter}
+                      className={`filter-tab ${
+                        activeFilter === filter ? "active" : ""
+                      }`}
+                      onClick={() => setActiveFilter(filter)}
+                    >
+                      {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  className="refresh-btn"
+                  onClick={fetchUserInvestments}
+                  title="Refresh data"
+                >
                   <ReloadOutlined />
                 </button>
               </div>
             </div>
 
-            <div className="panel-content">
+            <div className="section-content">
               {loading ? (
-                <div className="loading-state-modern">
-                  <LoadingOutlined
-                    spin
-                    style={{ fontSize: 48, color: "#3b82f6" }}
-                  />
-                  <p>Loading investments...</p>
-                  <small>Getting your investment portfolio</small>
+                <div className="loading-state">
+                  <LoadingOutlined spin className="loading-icon-large" />
+                  <p className="loading-text">Loading investments...</p>
+                  <small className="loading-subtext">
+                    Getting your investment portfolio
+                  </small>
                 </div>
-              ) : investments.length === 0 ? (
-                <div className="coming-soon-state">
+              ) : filteredInvestments.length === 0 ? (
+                <div className="empty-state">
                   <ComingSoonPlaceholder
-                    message="No investments yet. Start your first investment!"
+                    message="No investments found"
                     iconSize={64}
                   />
-                  <div className="coming-soon-actions">
+                  <div className="empty-state-actions">
                     <button
-                      className="btn btn-primary"
+                      className="btn-invest-now"
                       onClick={() => setShowNewInvestmentModal(true)}
                     >
                       <PlusOutlined />
-                      Start Investing
+                      Start Your First Investment
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="investments-grid-modern">
-                  {investments.map((investment) => {
+                <div className="investments-grid">
+                  {filteredInvestments.map((investment) => {
                     const planType =
                       investment.plan || investment.investmentType;
                     const planColor = getTypeColor(planType);
@@ -996,14 +1039,11 @@ const Investments = () => {
                       investment.status || investment.investmentStatus;
 
                     return (
-                      <div
-                        key={investment._id}
-                        className="investment-card-modern"
-                      >
-                        <div className="investment-header-modern">
-                          <div className="investment-title-section">
+                      <div key={investment._id} className="investment-card">
+                        <div className="investment-card-header">
+                          <div className="investment-info">
                             <div
-                              className="plan-icon-container"
+                              className="investment-icon-wrapper"
                               style={{
                                 backgroundColor: `${planColor}20`,
                                 color: planColor,
@@ -1012,8 +1052,10 @@ const Investments = () => {
                               {investmentPlans.find((p) => p.id === planType)
                                 ?.icon || <DollarOutlined />}
                             </div>
-                            <div>
-                              <h4>{getPlanName(planType)}</h4>
+                            <div className="investment-details">
+                              <h3 className="investment-title">
+                                {getPlanName(planType)}
+                              </h3>
                               <div className="investment-meta">
                                 <span className="investment-id">
                                   ID: {investment._id?.slice(-8)}
@@ -1022,10 +1064,10 @@ const Investments = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="investment-amount-section">
-                            <span className="amount-main">
+                          <div className="investment-amount">
+                            <div className="amount-value">
                               {formatCurrency(investment.amount)}
-                            </span>
+                            </div>
                             <span
                               className="roi-badge"
                               style={{
@@ -1038,37 +1080,37 @@ const Investments = () => {
                           </div>
                         </div>
 
-                        <div className="investment-details-modern">
-                          <div className="details-grid">
-                            <div className="detail-item-modern">
-                              <span className="detail-label">
+                        <div className="investment-card-body">
+                          <div className="investment-metrics">
+                            <div className="metric">
+                              <span className="metric-label">
                                 Current Value
                               </span>
-                              <span className="detail-value">
+                              <span className="metric-value">
                                 {formatCurrency(investment.currentValue)}
                               </span>
                             </div>
-                            <div className="detail-item-modern">
-                              <span className="detail-label">
+                            <div className="metric">
+                              <span className="metric-label">
                                 Returns Earned
                               </span>
-                              <span className="detail-value profit">
+                              <span className="metric-value profit">
                                 {formatCurrency(investment.totalReturns || 0)}
                               </span>
                             </div>
                           </div>
 
-                          <div className="timeline-section">
+                          <div className="investment-timeline">
                             <div className="timeline-header">
                               <CalendarOutlined />
                               <span>Investment Period</span>
                             </div>
                             <div className="timeline-dates">
-                              <span className="date">
+                              <span className="timeline-date">
                                 {formatDate(investment.startDate)}
                               </span>
-                              <span className="date-separator">→</span>
-                              <span className="date">
+                              <span className="timeline-separator">→</span>
+                              <span className="timeline-date">
                                 {formatDate(investment.endDate)}
                               </span>
                             </div>
@@ -1082,51 +1124,52 @@ const Investments = () => {
             </div>
           </div>
 
-          {/* Side Panel - Stats & Tips */}
-          <div className="side-panel">
-            <div className="stats-panel">
-              <div className="panel-header">
-                <h3>Investment Stats</h3>
+          {/* Sidebar */}
+          <div className="portfolio-sidebar">
+            {/* Quick Stats */}
+            <div className="sidebar-card quick-stats">
+              <div className="sidebar-card-header">
+                <h3 className="sidebar-card-title">Quick Stats</h3>
               </div>
               <div className="stats-grid">
-                <div className="stat-item-modern">
-                  <div className="stat-icon-small active">
+                <div className="quick-stat">
+                  <div className="quick-stat-icon active-stat">
                     <ClockCircleOutlined />
                   </div>
-                  <div className="stat-content-small">
-                    <span className="stat-label-small">Active</span>
-                    <span className="stat-value-small">{userStats.active}</span>
+                  <div className="quick-stat-content">
+                    <span className="quick-stat-label">Active</span>
+                    <span className="quick-stat-value">{userStats.active}</span>
                   </div>
                 </div>
-                <div className="stat-item-modern">
-                  <div className="stat-icon-small completed">
+                <div className="quick-stat">
+                  <div className="quick-stat-icon completed-stat">
                     <CheckCircleOutlined />
                   </div>
-                  <div className="stat-content-small">
-                    <span className="stat-label-small">Completed</span>
-                    <span className="stat-value-small">
+                  <div className="quick-stat-content">
+                    <span className="quick-stat-label">Completed</span>
+                    <span className="quick-stat-value">
                       {userStats.completed}
                     </span>
                   </div>
                 </div>
-                <div className="stat-item-modern">
-                  <div className="stat-icon-small total-deposits">
+                {/* <div className="quick-stat">
+                  <div className="quick-stat-icon deposit-stat">
                     <ArrowDownOutlined />
                   </div>
-                  <div className="stat-content-small">
-                    <span className="stat-label-small">Total Deposits</span>
-                    <span className="stat-value-small">
+                  <div className="quick-stat-content">
+                    <span className="quick-stat-label">Total Deposits</span>
+                    <span className="quick-stat-value">
                       {userStats.totalDeposits}
                     </span>
                   </div>
-                </div>
-                <div className="stat-item-modern">
-                  <div className="stat-icon-small total-investments">
+                </div> */}
+                <div className="quick-stat">
+                  <div className="quick-stat-icon total-stat">
                     <BarChartOutlined />
                   </div>
-                  <div className="stat-content-small">
-                    <span className="stat-label-small">Total</span>
-                    <span className="stat-value-small">
+                  <div className="quick-stat-content">
+                    <span className="quick-stat-label">Total</span>
+                    <span className="quick-stat-value">
                       {userStats.totalInvestments}
                     </span>
                   </div>
@@ -1134,11 +1177,11 @@ const Investments = () => {
               </div>
             </div>
 
-            {/* Recent Deposits Panel */}
-            <div className="recent-deposits-panel">
-              <div className="panel-header">
-                <h3>Recent Deposits</h3>
-                <span className="deposit-total">
+            {/* Recent Deposits */}
+            {/* <div className="sidebar-card recent-deposits">
+              <div className="sidebar-card-header">
+                <h3 className="sidebar-card-title">Recent Deposits</h3>
+                <span className="deposits-total">
                   {formatCurrency(userStats.totalDepositAmount)}
                 </span>
               </div>
@@ -1146,13 +1189,8 @@ const Investments = () => {
                 <div className="deposits-list">
                   {recentDeposits.map((deposit, index) => (
                     <div key={deposit._id || index} className="deposit-item">
-                      <div className="deposit-icon">
-                        <ArrowDownOutlined
-                          style={{
-                            color: "#10b981",
-                            fontSize: "16px",
-                          }}
-                        />
+                      <div className="deposit-icon-wrapper">
+                        <ArrowDownOutlined className="deposit-icon" />
                       </div>
                       <div className="deposit-info">
                         <div className="deposit-header">
@@ -1182,12 +1220,13 @@ const Investments = () => {
                   iconSize={32}
                 />
               )}
-            </div>
+            </div> */}
 
-            <div className="tips-panel">
-              <div className="panel-header">
+            {/* Investment Tips */}
+            <div className="sidebar-card investment-tips">
+              <div className="sidebar-card-header">
                 <InfoCircleOutlined className="tips-icon" />
-                <h3>Investment Tips</h3>
+                <h3 className="sidebar-card-title">Investment Tips</h3>
               </div>
               <ul className="tips-list">
                 <li>Diversify your investments across different plans</li>
@@ -1201,24 +1240,21 @@ const Investments = () => {
         </div>
 
         {/* Footer Actions */}
-        <div className="page-footer">
-          <button className="btn-refresh-large" onClick={fetchUserInvestments}>
+        <div className="portfolio-footer">
+          <button className="refresh-large-btn" onClick={fetchUserInvestments}>
             <ReloadOutlined />
-            Refresh Data
+            Refresh Portfolio
           </button>
+          <div className="last-updated">
+            <HistoryOutlined />
+            <span>Last updated: Just now</span>
+          </div>
         </div>
       </div>
 
       {/* New Investment Modal */}
       {showNewInvestmentModal && <NewInvestmentModal />}
 
-      {success && (
-        <div className="copy-notification">
-          Investment created successfully!
-        </div>
-      )}
-
-      {/* Footer */}
       <Footer />
     </div>
   );

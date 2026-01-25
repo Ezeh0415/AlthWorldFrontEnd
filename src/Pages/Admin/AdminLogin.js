@@ -80,7 +80,11 @@ const AdminLogin = () => {
         password: formData.password,
       };
 
-      await ApiService.login(LoginData);
+      const result = await ApiService.login(LoginData);
+
+      // Store token and user data
+      ApiService.setToken( result.accessToken);
+      ApiService.setUser(result.data);
 
       Navigate("/adminHomePage");
 

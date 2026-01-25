@@ -15,7 +15,6 @@ import {
   PlusOutlined,
   QuestionCircleOutlined,
   FilterOutlined,
-  DownloadOutlined,
   InfoCircleOutlined,
   MenuOutlined,
   CloseOutlined,
@@ -59,19 +58,19 @@ const Transactions = () => {
     {
       id: "deposit",
       label: "Deposits",
-      color: "#10B981",
+      color: "#059669",
       icon: <ArrowDownOutlined />,
     },
     {
       id: "withdraw",
       label: "Withdrawals",
-      color: "#EF4444",
+      color: "#e11d48",
       icon: <ArrowUpOutlined />,
     },
     {
       id: "profit",
       label: "Profits",
-      color: "#8B5CF6",
+      color: "#7c3aed",
       icon: <DollarOutlined />,
     },
   ];
@@ -93,7 +92,6 @@ const Transactions = () => {
       setLoading(true);
       try {
         const dashboardResponse = await ApiServices.getDashboardData();
-        console.log("Dashboard response:", dashboardResponse);
         setDashboardData(dashboardResponse);
 
         if (dashboardResponse?.wallet) {
@@ -294,10 +292,6 @@ const Transactions = () => {
 
     const amountInDollars = amount / 100;
 
-    // if (isMobileView && amountInDollars > 9999) {
-    //   return `$${(amountInDollars / 1000).toFixed(1)}K`;
-    // }
-
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -338,120 +332,110 @@ const Transactions = () => {
     const config = {
       completed: {
         label: isMobileView ? "Done" : "Completed",
-        color: "#10B981",
-        icon: <CheckCircleOutlined />,
+        className: "nexus-status-badge--completed",
       },
       success: {
         label: isMobileView ? "Done" : "Completed",
-        color: "#10B981",
-        icon: <CheckCircleOutlined />,
+        className: "nexus-status-badge--completed",
       },
       approved: {
         label: isMobileView ? "Done" : "Completed",
-        color: "#10B981",
-        icon: <CheckCircleOutlined />,
+        className: "nexus-status-badge--completed",
       },
       pending: {
         label: "Pending",
-        color: "#F59E0B",
-        icon: <ClockCircleOutlined />,
+        className: "nexus-status-badge--pending",
       },
       processing: {
         label: isMobileView ? "Proc" : "Processing",
-        color: "#3B82F6",
-        icon: <ClockCircleOutlined />,
+        className: "nexus-status-badge--processing",
       },
       canceled: {
         label: isMobileView ? "Cancel" : "Canceled",
-        color: "#EF4444",
-        icon: <CloseCircleOutlined />,
+        className: "nexus-status-badge--failed",
       },
       cancelled: {
         label: isMobileView ? "Cancel" : "Canceled",
-        color: "#EF4444",
-        icon: <CloseCircleOutlined />,
+        className: "nexus-status-badge--failed",
       },
       failed: {
         label: "Failed",
-        color: "#DC2626",
-        icon: <CloseCircleOutlined />,
+        className: "nexus-status-badge--failed",
       },
       rejected: {
         label: "Failed",
-        color: "#DC2626",
-        icon: <CloseCircleOutlined />,
+        className: "nexus-status-badge--failed",
       },
     };
 
-    const { label, color, icon } = config[status] || {
+    const { label, className } = config[status] || {
       label: status?.charAt(0).toUpperCase() + status?.slice(1) || "Unknown",
-      color: "#6B7280",
-      icon: <InfoCircleOutlined />,
+      className: "nexus-status-badge--completed",
     };
 
     return (
-      <span
-        className="status-badge"
-        style={{ backgroundColor: `${color}15`, color }}
-      >
-        {!isMobileView && icon}
+      <span className={`nexus-status-badge ${className}`}>
+        {!isMobileView && getStatusIcon(status)}
         {label}
       </span>
     );
+  };
+
+  // Helper function to get status icon
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "completed":
+      case "success":
+      case "approved":
+        return <CheckCircleOutlined />;
+      case "pending":
+      case "processing":
+        return <ClockCircleOutlined />;
+      case "canceled":
+      case "cancelled":
+      case "failed":
+      case "rejected":
+        return <CloseCircleOutlined />;
+      default:
+        return <InfoCircleOutlined />;
+    }
   };
 
   // Type icon component
   const TypeIcon = ({ type }) => {
     const config = {
       deposit: {
-        color: "#10B981",
+        className: "nexus-transaction-icon--deposit",
         icon: <ArrowDownOutlined />,
-        bgColor: "#10B98115",
       },
       withdraw: {
-        color: "#EF4444",
+        className: "nexus-transaction-icon--withdraw",
         icon: <ArrowUpOutlined />,
-        bgColor: "#EF444415",
       },
       withdrawal: {
-        color: "#EF4444",
+        className: "nexus-transaction-icon--withdraw",
         icon: <ArrowUpOutlined />,
-        bgColor: "#EF444415",
       },
       profit: {
-        color: "#8B5CF6",
+        className: "nexus-transaction-icon--profit",
         icon: <DollarOutlined />,
-        bgColor: "#8B5CF615",
       },
       earning: {
-        color: "#8B5CF6",
+        className: "nexus-transaction-icon--profit",
         icon: <DollarOutlined />,
-        bgColor: "#8B5CF615",
       },
       interest: {
-        color: "#8B5CF6",
+        className: "nexus-transaction-icon--profit",
         icon: <DollarOutlined />,
-        bgColor: "#8B5CF615",
       },
     };
 
-    const { color, icon, bgColor } = config[type] || {
-      color: "#6B7280",
+    const { className, icon } = config[type] || {
+      className: "nexus-transaction-icon--deposit",
       icon: <DollarOutlined />,
-      bgColor: "#6B728015",
     };
 
-    return (
-      <div
-        className="transaction-type-icon"
-        style={{
-          backgroundColor: bgColor,
-          color: color,
-        }}
-      >
-        {icon}
-      </div>
-    );
+    return <div className={`nexus-transaction-icon ${className}`}>{icon}</div>;
   };
 
   // Copy to clipboard
@@ -560,29 +544,27 @@ const Transactions = () => {
       reference,
       paymentMethod,
       transactionHash,
-      paymentIcon,
       currency,
     } = transaction;
 
     const amountInDollars = amount / 100;
 
     return (
-      <div className="transaction-card" key={_id}>
-        <div className="transaction-card-header">
-          <div className="transaction-header-left">
+      <div className="nexus-transaction-card" key={_id}>
+        <div className="nexus-transaction-card__header">
+          <div className="nexus-transaction-card__main">
             <TypeIcon type={type} />
-            <div className="transaction-title">
-              <h4>{description}</h4>
-              <div className="transaction-meta">
-                <span className="transaction-ref">{reference}</span>
-                <span className="transaction-method">
-                  {paymentIcon} {paymentMethod}
-                </span>
+            <div className="nexus-transaction-details">
+              <h4 className="nexus-transaction-title">{description}</h4>
+              <div className="nexus-transaction-meta">
+                <span className="nexus-transaction-ref">{reference}</span>
               </div>
             </div>
           </div>
-          <div className="transaction-header-right">
-            <div className={`transaction-amount ${type}`}>
+          <div className="nexus-transaction-header-right">
+            <div
+              className={`nexus-transaction-amount nexus-transaction-amount--${type}`}
+            >
               {type === "deposit" || type === "profit" ? "+" : "-"}
               {showValues ? formatCurrency(amount) : "••••••"}
             </div>
@@ -590,29 +572,31 @@ const Transactions = () => {
           </div>
         </div>
 
-        <div className="transaction-card-body">
-          <div className="transaction-details">
-            <div className="detail-item">
-              <span className="detail-label">Date & Time</span>
-              <span className="detail-value">{formatDate(createdAt)}</span>
+        <div className="nexus-transaction-card__body">
+          <div className="nexus-transaction-info">
+            <div className="nexus-info-item">
+              <span className="nexus-info-label">Date & Time</span>
+              <span className="nexus-info-value">{formatDate(createdAt)}</span>
             </div>
-            <div className="detail-item">
-              <span className="detail-label">Transaction ID</span>
+            <div className="nexus-info-item">
+              <span className="nexus-info-label">Transaction ID</span>
               <span
-                className={`detail-value clickable ${copiedId === _id ? "copied" : ""}`}
+                className={`nexus-info-value nexus-info-value--clickable ${
+                  copiedId === _id ? "nexus-info-value--copied" : ""
+                }`}
                 onClick={() => copyToClipboard(transactionHash, _id)}
               >
                 <CopyOutlined /> {transactionHash?.substring(0, 10)}...
               </span>
             </div>
-            <div className="detail-item">
-              <span className="detail-label">Currency</span>
-              <span className="detail-value">{currency}</span>
+            <div className="nexus-info-item">
+              <span className="nexus-info-label">Currency</span>
+              <span className="nexus-info-value">{currency}</span>
             </div>
             {!isMobileView && (
-              <div className="detail-item">
-                <span className="detail-label">Exact Amount</span>
-                <span className="detail-value">
+              <div className="nexus-info-item">
+                <span className="nexus-info-label">Exact Amount</span>
+                <span className="nexus-info-value">
                   {showValues ? `$${amountInDollars.toFixed(2)}` : "••••••"}
                 </span>
               </div>
@@ -620,9 +604,9 @@ const Transactions = () => {
           </div>
         </div>
 
-        <div className="transaction-card-footer">
+        <div className="nexus-transaction-card__footer">
           <button
-            className="btn-text details-btn"
+            className="nexus-details-button"
             onClick={() =>
               alert(
                 `Transaction Details\n\n` +
@@ -648,20 +632,20 @@ const Transactions = () => {
   // Withdraw Modal
   const WithdrawModal = () => (
     <div
-      className="modal-overlay"
+      className="nexus-modal-overlay"
       onClick={() => setShowNewWithdrawModal(false)}
     >
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Request Withdrawal</h3>
+      <div className="nexus-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="nexus-modal__header">
+          <h3 className="nexus-modal__title">Request Withdrawal</h3>
           <button
-            className="close-btn"
+            className="nexus-modal__close"
             onClick={() => setShowNewWithdrawModal(false)}
           >
             ×
           </button>
         </div>
-        <div className="modal-body">
+        <div className="nexus-modal__body">
           <div className="balance-info-card">
             <div className="balance-info-item">
               <span>Available Balance</span>
@@ -809,21 +793,21 @@ const Transactions = () => {
   };
 
   return (
-    <div className="transactions-page">
+    <div className="nexus-transactions">
       <Header />
 
       {/* Mobile Header */}
       {isMobileView && (
-        <div className="mobile-top-bar">
+        <div className="nexus-mobile-chrome">
           <button
-            className="menu-toggle"
+            className="nexus-mobile-chrome__button"
             onClick={() => setShowMobileMenu(!showMobileMenu)}
           >
             {showMobileMenu ? <CloseOutlined /> : <MenuOutlined />}
           </button>
-          <h1 className="mobile-title">Transactions</h1>
+          <h1 className="nexus-mobile-chrome__title">Transactions</h1>
           <button
-            className="eye-toggle"
+            className="nexus-mobile-chrome__button"
             onClick={() => setShowValues(!showValues)}
           >
             {showValues ? <EyeOutlined /> : <EyeInvisibleOutlined />}
@@ -833,29 +817,35 @@ const Transactions = () => {
 
       {/* Mobile Filter Menu */}
       {isMobileView && showMobileMenu && (
-        <div className="mobile-menu-overlay">
-          <div className="mobile-menu">
-            <div className="mobile-menu-header">
-              <h3>Filters</h3>
+        <div className="nexus-filter-drawer">
+          <div className="nexus-filter-drawer__content">
+            <div className="nexus-filter-drawer__header">
+              <h3 className="nexus-filter-drawer__title">Filters</h3>
               <button
-                className="close-btn"
+                className="nexus-filter-drawer__close"
                 onClick={() => setShowMobileMenu(false)}
               >
                 ×
               </button>
             </div>
-            <div className="mobile-filter-options">
+            <div className="nexus-filter-drawer__options">
               {filterOptions.map((filter) => (
                 <button
                   key={filter.id}
-                  className={`mobile-filter-option ${activeFilter === filter.id ? "active" : ""}`}
+                  className={`nexus-filter-drawer__option ${
+                    activeFilter === filter.id
+                      ? "nexus-filter-drawer__option--active"
+                      : ""
+                  }`}
                   onClick={() => {
                     setActiveFilter(filter.id);
                     setShowMobileMenu(false);
                   }}
                 >
-                  <span className="filter-icon">{filter.icon}</span>
-                  <span className="filter-label">{filter.label}</span>
+                  <span className="nexus-filter-drawer__option-icon">
+                    {filter.icon}
+                  </span>
+                  <span>{filter.label}</span>
                 </button>
               ))}
             </div>
@@ -863,98 +853,93 @@ const Transactions = () => {
         </div>
       )}
 
-      <main className="transactions-content">
+      <main className="nexus-content">
         {/* Desktop Header */}
         {!isMobileView && (
-          <div className="page-header">
-            <div className="header-content">
-              <h1>Transaction History</h1>
-              <p className="page-subtitle">
-                Track all your deposits, withdrawals, and investment returns
-              </p>
-              <div className="account-status">
-                Account Status:{" "}
-                <span
-                  className={
-                    dashboardData?.accountStatus?._id
-                      ? "status-active"
-                      : "status-inactive"
-                  }
-                >
-                  {dashboardData?.accountStatus?._id ? "Active" : "Inactive"}
-                </span>
+          <div className="nexus-desktop-header">
+            <div className="nexus-page-header">
+              <div className="nexus-page-header__main">
+                <h1>Transaction History</h1>
+                <p className="nexus-page-header__subtitle">
+                  Track all your deposits, withdrawals, and investment returns
+                </p>
+                <div className="account-status">
+                  Account Status:{" "}
+                  <span
+                    className={
+                      dashboardData?.accountStatus?._id
+                        ? "status-active"
+                        : "status-inactive"
+                    }
+                  >
+                    {dashboardData?.accountStatus?._id ? "Active" : "Inactive"}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="header-actions">
-              <button
-                className="btn btn-icon"
-                onClick={() => setShowValues(!showValues)}
-              >
-                {showValues ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-              </button>
-              {/* <button
-                className="btn btn-icon"
-                onClick={() => alert("Export feature coming soon!")}
-              >
-                <DownloadOutlined />
-              </button> */}
-              <button
-                className="btn btn-icon"
-                onClick={refreshTransactions}
-                disabled={loading}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="size-6"
+              <div className="nexus-page-header__actions">
+                <button
+                  className="nexus-icon-button"
+                  onClick={() => setShowValues(!showValues)}
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-                  />
-                </svg>
-              </button>
+                  {showValues ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                </button>
+                <button
+                  className="nexus-icon-button"
+                  onClick={refreshTransactions}
+                  disabled={loading}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="size-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Balance Overview - Responsive Grid */}
-        <div
-          className={`balance-overview-cards ${isMobileView ? "mobile-layout" : "desktop-layout"}`}
-        >
-          <div className="balance-card total">
-            <div className="balance-card-header">
-              <div className="balance-icon">
+        {/* Balance Overview */}
+        <div className="nexus-balance-grid">
+          {/* Total Balance Card */}
+          <div className="nexus-balance-total">
+            <div className="nexus-balance-total__header">
+              <div className="nexus-balance-total__icon">
                 <WalletOutlined />
               </div>
               <div>
-                <h3>Total Balance</h3>
-                <div className="balance-amount">
+                <h3 className="nexus-balance-total__amount">Total Balance</h3>
+                <div className="nexus-balance-total__amount">
                   {formatCurrency(userBalance.total)}
                 </div>
               </div>
             </div>
-            <div className="balance-details">
-              <div className="detail-row">
-                <span className="detail-label">Available</span>
-                <span className="detail-value">
+            <div className="nexus-balance-total__details">
+              <div className="nexus-balance-detail__item">
+                <span className="nexus-balance-detail__label">Available</span>
+                <span className="nexus-balance-detail__value">
                   {formatCurrency(userBalance.available)}
                 </span>
               </div>
-              <div className="detail-row">
-                <span className="detail-label">Invested</span>
-                <span className="detail-value">
+              <div className="nexus-balance-detail__item">
+                <span className="nexus-balance-detail__label">Invested</span>
+                <span className="nexus-balance-detail__value">
                   {formatCurrency(userBalance.invested)}
                 </span>
               </div>
               {userBalance.pending > 0 && (
-                <div className="detail-row">
-                  <span className="detail-label">Pending</span>
-                  <span className="detail-value pending">
+                <div className="nexus-balance-detail__item">
+                  <span className="nexus-balance-detail__label">Pending</span>
+                  <span className="nexus-balance-detail__value nexus-balance-detail__value--pending">
                     {formatCurrency(userBalance.pending)}
                   </span>
                 </div>
@@ -962,48 +947,55 @@ const Transactions = () => {
             </div>
           </div>
 
+          {/* Stats Cards */}
           {!isMobileView ? (
-            <div className="stats-card">
-              <h3>Summary</h3>
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <div className="stat-icon deposit">
+            <div className="nexus-desktop-stats">
+              <h3 className="nexus-desktop-stats__title">Summary</h3>
+              <div className="nexus-desktop-stats__grid">
+                <div className="nexus-desktop-stat__item">
+                  <div className="nexus-desktop-stat__icon nexus-desktop-stat__icon--deposit">
                     <ArrowDownOutlined />
                   </div>
-                  <div className="stat-content">
-                    <div className="stat-label">Total Deposits</div>
-                    <div className="stat-value">
+                  <div className="nexus-desktop-stat__content">
+                    <div className="nexus-desktop-stat__label">
+                      Total Deposits
+                    </div>
+                    <div className="nexus-desktop-stat__value">
                       {formatCurrency(userStats.totalDeposits)}
                     </div>
-                    <div className="stat-subtext">
+                    <div className="nexus-desktop-stat__subtext">
                       {userStats.pendingDeposits} pending
                     </div>
                   </div>
                 </div>
-                <div className="stat-item">
-                  <div className="stat-icon withdraw">
+                <div className="nexus-desktop-stat__item">
+                  <div className="nexus-desktop-stat__icon nexus-desktop-stat__icon--withdraw">
                     <ArrowUpOutlined />
                   </div>
-                  <div className="stat-content">
-                    <div className="stat-label">Total Withdrawals</div>
-                    <div className="stat-value">
+                  <div className="nexus-desktop-stat__content">
+                    <div className="nexus-desktop-stat__label">
+                      Total Withdrawals
+                    </div>
+                    <div className="nexus-desktop-stat__value">
                       {formatCurrency(userStats.totalWithdrawals)}
                     </div>
-                    <div className="stat-subtext">
+                    <div className="nexus-desktop-stat__subtext">
                       {userStats.pendingWithdrawals} pending
                     </div>
                   </div>
                 </div>
-                <div className="stat-item">
-                  <div className="stat-icon profit">
+                <div className="nexus-desktop-stat__item">
+                  <div className="nexus-desktop-stat__icon nexus-desktop-stat__icon--profit">
                     <DollarOutlined />
                   </div>
-                  <div className="stat-content">
-                    <div className="stat-label">Total Profits</div>
-                    <div className="stat-value">
+                  <div className="nexus-desktop-stat__content">
+                    <div className="nexus-desktop-stat__label">
+                      Total Profits
+                    </div>
+                    <div className="nexus-desktop-stat__value">
                       {formatCurrency(userStats.totalProfits)}
                     </div>
-                    <div className="stat-subtext">
+                    <div className="nexus-desktop-stat__subtext">
                       From {dashboardData?.investments?.length || 0} investments
                     </div>
                   </div>
@@ -1011,37 +1003,37 @@ const Transactions = () => {
               </div>
             </div>
           ) : (
-            <div className="mobile-stats-card">
-              <div className="mobile-stats-row">
-                <div className="mobile-stat">
-                  <div className="mobile-stat-icon deposit">
+            <div className="nexus-mobile-stats">
+              <div className="nexus-mobile-stats__grid">
+                <div className="nexus-mobile-stat__item">
+                  <div className="nexus-mobile-stat__icon nexus-mobile-stat__icon--deposit">
                     <ArrowDownOutlined />
                   </div>
-                  <div className="mobile-stat-content">
-                    <div className="mobile-stat-label">Deposits</div>
-                    <div className="mobile-stat-value">
+                  <div className="nexus-mobile-stat__content">
+                    <div className="nexus-mobile-stat__label">Deposits</div>
+                    <div className="nexus-mobile-stat__value">
                       {formatCurrency(userStats.totalDeposits)}
                     </div>
                   </div>
                 </div>
-                <div className="mobile-stat">
-                  <div className="mobile-stat-icon withdraw">
+                <div className="nexus-mobile-stat__item">
+                  <div className="nexus-mobile-stat__icon nexus-mobile-stat__icon--withdraw">
                     <ArrowUpOutlined />
                   </div>
-                  <div className="mobile-stat-content">
-                    <div className="mobile-stat-label">Withdrawals</div>
-                    <div className="mobile-stat-value">
+                  <div className="nexus-mobile-stat__content">
+                    <div className="nexus-mobile-stat__label">Withdrawals</div>
+                    <div className="nexus-mobile-stat__value">
                       {formatCurrency(userStats.totalWithdrawals)}
                     </div>
                   </div>
                 </div>
-                <div className="mobile-stat">
-                  <div className="mobile-stat-icon profit">
+                <div className="nexus-mobile-stat__item">
+                  <div className="nexus-mobile-stat__icon nexus-mobile-stat__icon--profit">
                     <DollarOutlined />
                   </div>
-                  <div className="mobile-stat-content">
-                    <div className="mobile-stat-label">Profits</div>
-                    <div className="mobile-stat-value">
+                  <div className="nexus-mobile-stat__content">
+                    <div className="nexus-mobile-stat__label">Profits</div>
+                    <div className="nexus-mobile-stat__value">
                       {formatCurrency(userStats.totalProfits)}
                     </div>
                   </div>
@@ -1050,34 +1042,40 @@ const Transactions = () => {
             </div>
           )}
 
-          <div className="actions-card">
-            <h3>{isMobileView ? "Actions" : "Quick Actions"}</h3>
-            <div className="action-buttons">
+          {/* Actions Card */}
+          <div className="nexus-actions-card">
+            <h3 className="nexus-actions-card__title">
+              {isMobileView ? "Actions" : "Quick Actions"}
+            </h3>
+            <div className="nexus-actions-card__grid">
               <button
-                className="btn btn-success"
+                className="nexus-action-button nexus-action-button--success"
                 onClick={() => navigate("/deposit")}
               >
                 <ArrowDownOutlined />
-                <span>{isMobileView ? "Deposit" : "Deposit Funds"}</span>
+                <span className="nexus-w-btn">{isMobileView ? "Deposit" : "Deposit Funds"}</span>
               </button>
               <button
-                className="btn btn-primary"
-                onClick={() => navigate("/withdrawal")}
+                className="nexus-action-button  nexus-withdraw"
+                onClick={() => navigate("/withdraw")}
                 disabled={userBalance.available <= 0}
               >
                 <ArrowUpOutlined />
-                <span>{isMobileView ? "Withdraw" : "Withdraw Funds"}</span>
+                <span className="nexus-w-btn">{isMobileView ? "Withdraw" : "Withdraw Funds"}</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Search and Filter */}
-        <div className="filters-section">
-          <div className="search-container">
-            <SearchOutlined />
+        <div className="nexus-search-section">
+          <div className="nexus-search-container">
+            <span className="nexus-search-icon">
+              <SearchOutlined />
+            </span>
             <input
               type="text"
+              className="nexus-search-input"
               placeholder={
                 isMobileView
                   ? "Search transactions..."
@@ -1088,7 +1086,7 @@ const Transactions = () => {
             />
             {searchTerm && (
               <button
-                className="clear-search"
+                className="nexus-search-clear"
                 onClick={() => setSearchTerm("")}
               >
                 ×
@@ -1097,11 +1095,13 @@ const Transactions = () => {
           </div>
 
           {!isMobileView && (
-            <div className="filter-tabs">
+            <div className="nexus-filter-tabs">
               {filterOptions.map((filter) => (
                 <button
                   key={filter.id}
-                  className={`filter-tab ${activeFilter === filter.id ? "active" : ""}`}
+                  className={`nexus-filter-tab ${
+                    activeFilter === filter.id ? "nexus-filter-tab--active" : ""
+                  }`}
                   onClick={() => setActiveFilter(filter.id)}
                 >
                   {filter.label}
@@ -1110,13 +1110,13 @@ const Transactions = () => {
             </div>
           )}
 
-          <div className="results-info">
-            <span className="results-count">
+          <div className="nexus-results-info">
+            <span className="nexus-results-count">
               {filteredTransactions.length} transactions
             </span>
             {(searchTerm || activeFilter !== "all") && (
               <button
-                className="btn-text"
+                className="nexus-clear-filters"
                 onClick={() => {
                   setSearchTerm("");
                   setActiveFilter("all");
@@ -1127,7 +1127,7 @@ const Transactions = () => {
             )}
             {!isMobileView && (
               <button
-                className="btn-text"
+                className="nexus-clear-filters"
                 onClick={refreshTransactions}
                 disabled={loading}
               >
@@ -1138,16 +1138,14 @@ const Transactions = () => {
         </div>
 
         {/* Transaction Cards Container */}
-        <div className="transactions-cards-section">
+        <div className="nexus-transactions-list">
           {loading ? (
-            <div className="loading-container">
-              <div className="spinner"></div>
-              <p>Loading your transactions...</p>
+            <div className="nexus-loading">
+              <div className="nexus-loading-spinner"></div>
+              <p className="nexus-loading-text">Loading your transactions...</p>
             </div>
           ) : filteredTransactions.length > 0 ? (
-            <div
-              className={`transactions-grid ${isMobileView ? "mobile-grid" : "desktop-grid"}`}
-            >
+            <div className="nexus-transactions-grid">
               {filteredTransactions.map((transaction) => (
                 <TransactionCard
                   key={transaction._id}
@@ -1156,19 +1154,19 @@ const Transactions = () => {
               ))}
             </div>
           ) : (
-            <div className="empty-state">
-              <div className="empty-state-icon">
+            <div className="nexus-transactions-empty">
+              <div className="nexus-empty-icon">
                 <HistoryOutlined />
               </div>
-              <h3>No transactions found</h3>
-              <p>
+              <h3 className="nexus-empty-title">No transactions found</h3>
+              <p className="nexus-empty-description">
                 {transactions.length === 0
                   ? "You haven't made any transactions yet. Start by making your first deposit!"
                   : "No transactions match your current filters."}
               </p>
-              <div className="empty-state-actions">
+              <div className="nexus-empty-actions">
                 <button
-                  className="btn btn-primary"
+                  className="nexus-action-button nexus-action-button--primary"
                   onClick={() => navigate("/deposit")}
                 >
                   <PlusOutlined />
@@ -1176,7 +1174,7 @@ const Transactions = () => {
                 </button>
                 {(searchTerm || activeFilter !== "all") && (
                   <button
-                    className="btn btn-outline"
+                    className="nexus-action-button nexus-action-button--success"
                     onClick={() => {
                       setSearchTerm("");
                       setActiveFilter("all");
@@ -1192,21 +1190,21 @@ const Transactions = () => {
 
         {/* Help Section */}
         {!isMobileView && (
-          <div className="help-section">
-            <div className="help-header">
+          <div className="nexus-help-section">
+            <div className="nexus-help-header">
               <QuestionCircleOutlined />
               <h3>Need Help?</h3>
             </div>
-            <div className="help-content">
-              <div className="help-item">
+            <div className="nexus-help-grid">
+              <div className="nexus-help-item">
                 <strong>Processing Times</strong>
                 <p>Deposits: 1-2 hours • Withdrawals: 24-48 hours</p>
               </div>
-              <div className="help-item">
+              <div className="nexus-help-item">
                 <strong>Transaction Fees</strong>
                 <p>No deposit fees • Withdrawal fees may apply</p>
               </div>
-              <div className="help-item">
+              <div className="nexus-help-item">
                 <strong>Support</strong>
                 <p>
                   Keep your transaction IDs for reference • Contact support for

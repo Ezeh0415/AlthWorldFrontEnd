@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   EyeOutlined,
   CheckCircleOutlined,
@@ -11,7 +11,6 @@ import {
   ArrowDownOutlined,
   FileTextOutlined,
   DatabaseOutlined,
-  SettingOutlined,
   ExclamationCircleOutlined,
   LoadingOutlined,
   SearchOutlined,
@@ -20,8 +19,12 @@ import {
   SyncOutlined,
   LeftOutlined,
   RightOutlined,
-  MoreOutlined,
   InfoCircleOutlined,
+  WalletOutlined,
+  CalendarOutlined,
+  CreditCardOutlined,
+  PercentageOutlined,
+  TagOutlined,
 } from "@ant-design/icons";
 import "../../styles/Admin/AdminTransaction.css";
 import ApiServices from "../../Commponets/ApiService";
@@ -59,106 +62,347 @@ const formatTime = (dateString) => {
   });
 };
 
+const getTimeAgo = (dateString) => {
+  if (!dateString) return "Just now";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffHours < 24)
+    return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+  return formatDate(dateString);
+};
+
 // ==============================
 // UI COMPONENTS
 // ==============================
-const StatCard = ({ title, value, color, icon, suffix = "", loading }) => (
-  <div className="stat-card">
-    <div className="stat-card-header">
-      <span className="stat-icon" style={{ background: color + "20", color }}>
-        {icon}
-      </span>
-      <span className="stat-title">{title}</span>
-    </div>
-    <div className="stat-value" style={{ color }}>
-      {loading ? (
-        <div className="stat-loading">
-          <LoadingOutlined />
-        </div>
-      ) : (
-        <>
-          {value?.toLocaleString() || 0} {suffix}
-        </>
-      )}
-    </div>
-  </div>
-);
-
-const StatusBadge = ({ status }) => {
-  const statusConfig = {
-    completed: { color: "#10b981", icon: <CheckCircleOutlined /> },
-    pending: { color: "#f59e0b", icon: <ClockCircleOutlined /> },
-    cancelled: { color: "#ef4444", icon: <CloseCircleOutlined /> },
-    failed: { color: "#dc2626", icon: <CloseCircleOutlined /> },
-    processing: { color: "#3b82f6", icon: <ClockCircleOutlined /> },
-    refunded: { color: "#8b5cf6", icon: <CheckCircleOutlined /> },
+const StatCard = ({ title, value, iconType, loading, change, totalAmount }) => {
+  const getIconClass = () => {
+    switch (iconType) {
+      case "total":
+        return "aura-stat-card__icon aura-stat-card__icon--primary";
+      case "completed":
+        return "aura-stat-card__icon aura-stat-card__icon--success";
+      case "pending":
+        return "aura-stat-card__icon aura-stat-card__icon--warning";
+      case "amount":
+        return "aura-stat-card__icon aura-stat-card__icon--teal";
+      default:
+        return "aura-stat-card__icon";
+    }
   };
 
-  const config = statusConfig[status] || {
-    color: "#6b7280",
-    icon: <InfoCircleOutlined />,
+  const getTrendClass = () => {
+    if (!change) return "";
+    return change > 0
+      ? "aura-stat-card__trend aura-stat-card__trend--positive"
+      : "aura-stat-card__trend aura-stat-card__trend--negative";
   };
 
   return (
-    <span
-      className="status-badge"
-      style={{
-        backgroundColor: config.color + "15",
-        color: config.color,
-        borderColor: config.color + "30",
-      }}
-    >
-      {config.icon}
-      <span>
-        {status?.charAt(0).toUpperCase() + status?.slice(1) || "Unknown"}
-      </span>
+    <div className="aura-stat-card">
+      <div className="aura-stat-card__header">
+        <div className={getIconClass()}>
+          {iconType === "total" ? (
+            <DatabaseOutlined />
+          ) : iconType === "completed" ? (
+            <CheckCircleOutlined />
+          ) : iconType === "pending" ? (
+            <ClockCircleOutlined />
+          ) : (
+            <CreditCardOutlined />
+          )}
+        </div>
+        {change && (
+          <div className={getTrendClass()}>
+            {change > 0 ? (
+              <>
+                <ArrowUpOutlined /> {change}%
+              </>
+            ) : (
+              <>
+                <ArrowDownOutlined /> {Math.abs(change)}%
+              </>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="aura-stat-card__body">
+        <div className="aura-stat-card__value">
+          {loading ? (
+            <div className="aura-loading__text">...</div>
+          ) : iconType === "amount" ? (
+            formatCurrency(totalAmount)
+          ) : (
+            value?.toLocaleString() || 0
+          )}
+        </div>
+        <p className="aura-stat-card__title">{title}</p>
+        {iconType === "amount" && (
+          <div className="aura-stat-card__subtext">Total processed amount</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const StatusBadge = ({ status }) => {
+  const getBadgeClass = () => {
+    switch (status) {
+      case "completed":
+        return "aura-badge aura-badge--success";
+      case "pending":
+        return "aura-badge aura-badge--pending";
+      case "cancelled":
+      case "failed":
+        return "aura-badge aura-badge--failed";
+      case "processing":
+        return "aura-badge aura-badge--processing";
+      default:
+        return "aura-badge aura-badge--pending";
+    }
+  };
+
+  const getIcon = () => {
+    switch (status) {
+      case "completed":
+        return <CheckCircleOutlined />;
+      case "pending":
+      case "processing":
+        return <ClockCircleOutlined />;
+      case "cancelled":
+      case "failed":
+        return <CloseCircleOutlined />;
+      default:
+        return <InfoCircleOutlined />;
+    }
+  };
+
+  const getLabel = () => {
+    switch (status) {
+      case "completed":
+        return "Completed";
+      case "pending":
+        return "Pending";
+      case "cancelled":
+        return "Cancelled";
+      case "failed":
+        return "Failed";
+      case "processing":
+        return "Processing";
+      default:
+        return "Unknown";
+    }
+  };
+
+  return (
+    <span className={getBadgeClass()}>
+      {getIcon()}
+      <span>{getLabel()}</span>
     </span>
   );
 };
 
 const TypeBadge = ({ type }) => {
-  const typeConfig = {
-    deposit: {
-      color: "#10b981",
-      icon: <ArrowDownOutlined />,
-      label: "Deposit",
-    },
-    withdrawal: {
-      color: "#ef4444",
-      icon: <ArrowUpOutlined />,
-      label: "Withdrawal",
-    },
-    investment: {
-      color: "#3b82f6",
-      icon: <DollarOutlined />,
-      label: "Investment",
-    },
-    profit: { color: "#8b5cf6", icon: <DollarOutlined />, label: "Profit" },
-    transfer: {
-      color: "#f59e0b",
-      icon: <ArrowUpOutlined />,
-      label: "Transfer",
-    },
+  const getBadgeClass = () => {
+    switch (type) {
+      case "deposit":
+        return "aura-badge aura-badge--deposit";
+      case "withdrawal":
+        return "aura-badge aura-badge--withdrawal";
+      case "investment":
+        return "aura-badge aura-badge--investment";
+      case "profit":
+        return "aura-badge aura-badge--profit";
+      default:
+        return "aura-badge";
+    }
   };
 
-  const config = typeConfig[type] || {
-    color: "#6b7280",
-    icon: <DollarOutlined />,
-    label: type || "Unknown",
+  const getIcon = () => {
+    switch (type) {
+      case "deposit":
+        return <ArrowDownOutlined />;
+      case "withdrawal":
+        return <ArrowUpOutlined />;
+      case "investment":
+        return <DollarOutlined />;
+      case "profit":
+        return <PercentageOutlined />;
+      default:
+        return <CreditCardOutlined />;
+    }
   };
 
   return (
-    <span
-      className="type-badge"
-      style={{
-        backgroundColor: config.color + "15",
-        color: config.color,
-        borderColor: config.color + "30",
-      }}
-    >
-      {config.icon}
-      <span>{config.label}</span>
+    <span className={getBadgeClass()}>
+      {getIcon()}
+      <span>{type?.charAt(0).toUpperCase() + type?.slice(1) || "Unknown"}</span>
     </span>
+  );
+};
+
+// Transaction Card Component
+const TransactionCard = ({
+  transaction,
+  onViewDetails,
+  onApprove,
+  onReject,
+  loadingAction,
+}) => {
+  const isPending = transaction.status === "pending";
+
+  const getTransactionIconClass = () => {
+    switch (transaction.type) {
+      case "deposit":
+        return "aura-transaction-icon aura-transaction-icon--deposit";
+      case "withdrawal":
+        return "aura-transaction-icon aura-transaction-icon--withdrawal";
+      case "investment":
+        return "aura-transaction-icon aura-transaction-icon--investment";
+      case "profit":
+        return "aura-transaction-icon aura-transaction-icon--profit";
+      default:
+        return "aura-transaction-icon aura-transaction-icon--deposit";
+    }
+  };
+
+  const getTransactionIcon = () => {
+    switch (transaction.type) {
+      case "deposit":
+        return <ArrowDownOutlined />;
+      case "withdrawal":
+        return <ArrowUpOutlined />;
+      case "investment":
+        return <DollarOutlined />;
+      case "profit":
+        return <PercentageOutlined />;
+      default:
+        return <CreditCardOutlined />;
+    }
+  };
+
+  const getActionButtonText = () => {
+    if (transaction.type === "withdrawal") return "Complete";
+    if (transaction.type === "deposit") return "Confirm";
+    return "Approve";
+  };
+
+  return (
+    <div className="aura-transaction-card">
+      <div className="aura-transaction-card__header">
+        <div className="aura-transaction-card__left">
+          <div className={getTransactionIconClass()}>
+            {getTransactionIcon()}
+          </div>
+          <div className="aura-transaction-info">
+            <h4>{transaction.description || "Transaction"}</h4>
+            <div className="aura-transaction-meta">
+              <div className="aura-transaction-meta__item">
+                <TagOutlined />
+                <span>{transaction._id?.slice(-8).toUpperCase()}</span>
+              </div>
+              <div className="aura-transaction-meta__item">
+                <CalendarOutlined />
+                <span>{getTimeAgo(transaction.createdAt)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <StatusBadge status={transaction.status} />
+      </div>
+
+      <div className="aura-transaction-card__body">
+        <div className="aura-user-info">
+          <div className="aura-user-avatar">
+            <UserOutlined />
+          </div>
+          <div className="aura-user-details">
+            <h5>{transaction.fullName || "Unknown User"}</h5>
+            <p className="aura-user-email">
+              <MailOutlined />
+              {transaction.email || "No email"}
+            </p>
+          </div>
+        </div>
+
+        <div className="aura-transaction-details">
+          <div className="aura-detail-item">
+            <span className="aura-detail-label">Amount</span>
+            <div className="aura-detail-value aura-detail-value--amount">
+              {formatCurrency(
+                transaction.creditedAmount ||
+                  transaction.requestedAmount ||
+                  transaction.amount ||
+                  0,
+              )}
+            </div>
+          </div>
+          <div className="aura-detail-item">
+            <span className="aura-detail-label">Type</span>
+            <div className="aura-detail-value">
+              <TypeBadge type={transaction.type} />
+            </div>
+          </div>
+          <div className="aura-detail-item">
+            <span className="aura-detail-label">Date</span>
+            <div className="aura-detail-value">
+              {formatDate(transaction.createdAt)}
+            </div>
+          </div>
+          <div className="aura-detail-item">
+            <span className="aura-detail-label">Time</span>
+            <div className="aura-detail-value">
+              {formatTime(transaction.createdAt)}
+            </div>
+          </div>
+        </div>
+
+        {transaction.walletAddress && (
+          <div className="aura-wallet-info">
+            <WalletOutlined />
+            <span className="aura-truncate">{transaction.walletAddress}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="aura-transaction-card__footer">
+        <button
+          className="aura-action-button aura-action-button--view"
+          onClick={() => onViewDetails(transaction)}
+          disabled={loadingAction}
+        >
+          <EyeOutlined />
+          <span>Details</span>
+        </button>
+
+        {isPending && (
+          <div className="aura-action-buttons">
+            <button
+              className="aura-action-button aura-action-button--approve"
+              onClick={() => onApprove(transaction)}
+              disabled={loadingAction}
+            >
+              <CheckCircleOutlined />
+              <span>{getActionButtonText()}</span>
+            </button>
+            <button
+              className="aura-action-button aura-action-button--reject"
+              onClick={() => onReject(transaction)}
+              disabled={loadingAction}
+            >
+              <CloseCircleOutlined />
+              <span>Reject</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -172,11 +416,23 @@ const AdminTransaction = () => {
   const [loading, setLoading] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit] = useState(12);
   const [transaction, setTransaction] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [viewMode, setViewMode] = useState("grid");
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
 
   useEffect(() => {
     fetchDashboardData();
@@ -196,78 +452,144 @@ const AdminTransaction = () => {
       };
 
       const data = await ApiServices.getTransactions(params);
-      setTransaction(data);
 
-      // Add pagination metadata
       if (data) {
-        setTransaction((prev) => ({
+        setTransaction({
           ...data,
           hasPrev: data.page > 1,
           hasNext: data.page < data.totalPages,
-        }));
+        });
       }
     } catch (err) {
       console.error("API Error:", err);
       setError(err.message || "Failed to load transactions");
     } finally {
       setLoading(false);
-      fetchDashboardData();
-      setModalVisible(false);
     }
   };
 
-  const handleMarkComplete = async (userId, creditedAmount, transactionId) => {
+  const handleMarkComplete = async (transaction) => {
     try {
+      setActionLoadingId(transaction._id);
       setLoadingAction(true);
-      const data = { userId, creditedAmount, transactionId };
-      const result = await ApiServices.ConfirmDeposit(data);
+      setError(null);
 
-      if (result.success) {
-        // Refresh data
+      const transactionId = transaction.transactionId;
+      const userId = transaction.userId;
+      const amount =
+        transaction.creditedAmount ||
+        transaction.requestedAmount ||
+        transaction.amount ||
+        0;
+
+      console.log("Processing transaction:", {
+        type: transaction.type,
+        transactionId,
+        userId,
+        amount,
+      });
+
+      let result;
+
+      if (transaction.type === "withdraw") {
+        const data = { userId, creditedAmount: amount, transactionId };
+        result = await ApiServices.confirmWithdraw(data);
+      } else if (transaction.type === "deposit") {
+        const data = {
+          userId,
+          creditedAmount: amount,
+          transactionId,
+        };
+        result = await ApiServices.ConfirmDeposit(data);
+      } else {
+        throw new Error(`Cannot process ${transaction.type} transaction`);
+      }
+
+      if (result && result.success) {
         fetchDashboardData();
         setModalVisible(false);
+        console.log(`${transaction.type} processed successfully`);
       }
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      console.error(`Process ${transaction.type} error:`, err);
+      setError(err.message || `Failed to process ${transaction.type}`);
     } finally {
       setLoadingAction(false);
-      fetchDashboardData();
-      setModalVisible(false);
+      setActionLoadingId(null);
     }
   };
 
-  const handleCancelTransaction = async (userId, transactionId) => {
+  const handleCancelTransaction = async (transaction) => {
     try {
+      setActionLoadingId(transaction._id);
       setLoadingAction(true);
-      const data = { userId, transactionId };
-      const result = await ApiServices.declineDeposit(data);
+      setError(null);
 
-      if (result.success) {
-        // Refresh data
+      const transactionId = transaction._id;
+      const userId = transaction.userId;
+
+      console.log("Cancelling transaction:", {
+        type: transaction.type,
+        transactionId,
+        userId,
+      });
+
+      let result;
+
+      if (transaction.type === "withdrawal") {
+        const data = { userId, transactionId };
+        result = await ApiServices.declineWithdraw(data);
+      } else if (transaction.type === "deposit") {
+        const data = { userId, transactionId };
+        result = await ApiServices.declineDeposit(data);
+      } else {
+        throw new Error(`Cannot cancel ${transaction.type} transaction`);
+      }
+
+      if (result && result.success) {
         fetchDashboardData();
         setModalVisible(false);
+        console.log(`${transaction.type} cancelled successfully`);
       }
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      console.error(`Cancel ${transaction.type} error:`, err);
+      setError(err.message || `Failed to cancel ${transaction.type}`);
     } finally {
       setLoadingAction(false);
+      setActionLoadingId(null);
     }
   };
 
   const handleNext = () => {
     if (transaction?.hasNext) {
       setPage((prev) => prev + 1);
+      // Scroll to top smoothly
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     }
   };
 
   const handlePrev = () => {
     if (transaction?.hasPrev) {
       setPage((prev) => prev - 1);
+
+      // Scroll to top smoothly
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     }
   };
 
   const handlePageClick = (pageNumber) => {
     setPage(pageNumber);
+    // Scroll to top smoothly
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const getTransactionCounts = (transactions) => {
@@ -289,82 +611,6 @@ const AdminTransaction = () => {
 
   const counts = getTransactionCounts(transaction?.transactions);
 
-  const renderPageNumbers = () => {
-    if (!transaction?.totalPages) return null;
-
-    const pages = [];
-    const totalPages = transaction.totalPages;
-    const current = transaction.page;
-
-    // Show first page
-    if (totalPages > 1) {
-      pages.push(
-        <button
-          key={1}
-          onClick={() => handlePageClick(1)}
-          className={`page-number ${current === 1 ? "active" : ""}`}
-          disabled={loading}
-        >
-          1
-        </button>,
-      );
-    }
-
-    // Show ellipsis if needed
-    if (current > 3) {
-      pages.push(
-        <span key="left-ellipsis" className="page-ellipsis">
-          ...
-        </span>,
-      );
-    }
-
-    // Show current page and neighbors
-    for (
-      let i = Math.max(2, current - 1);
-      i <= Math.min(totalPages - 1, current + 1);
-      i++
-    ) {
-      if (i > 1 && i < totalPages) {
-        pages.push(
-          <button
-            key={i}
-            onClick={() => handlePageClick(i)}
-            className={`page-number ${current === i ? "active" : ""}`}
-            disabled={loading}
-          >
-            {i}
-          </button>,
-        );
-      }
-    }
-
-    // Show ellipsis if needed
-    if (current < totalPages - 2) {
-      pages.push(
-        <span key="right-ellipsis" className="page-ellipsis">
-          ...
-        </span>,
-      );
-    }
-
-    // Show last page if there's more than one page
-    if (totalPages > 1) {
-      pages.push(
-        <button
-          key={totalPages}
-          onClick={() => handlePageClick(totalPages)}
-          className={`page-number ${current === totalPages ? "active" : ""}`}
-          disabled={loading}
-        >
-          {totalPages}
-        </button>,
-      );
-    }
-
-    return pages;
-  };
-
   const viewTransactionDetails = (transaction) => {
     setSelectedTransaction(transaction);
     setModalVisible(true);
@@ -377,105 +623,163 @@ const AdminTransaction = () => {
     }
   };
 
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setTypeFilter("all");
+    setPage(1);
+  };
+
+  const getTotalAmount = () => {
+    if (!transaction?.transactions) return 0;
+    return transaction.transactions.reduce((sum, tx) => {
+      const amount = tx.creditedAmount || tx.requestedAmount || tx.amount || 0;
+      return sum + amount;
+    }, 0);
+  };
+
+  const getActionText = () => {
+    if (!selectedTransaction) return "";
+    if (selectedTransaction.type === "withdrawal") return "Complete Withdrawal";
+    if (selectedTransaction.type === "deposit") return "Confirm Deposit";
+    return "Approve Transaction";
+  };
+
+  const getRejectText = () => {
+    if (!selectedTransaction) return "";
+    if (selectedTransaction.type === "withdrawal") return "Decline Withdrawal";
+    if (selectedTransaction.type === "deposit") return "Reject Deposit";
+    return "Reject Transaction";
+  };
+
   return (
-    <div className="admin-transaction-container">
-      {/* HEADER SECTION */}
-      <div className="admin-transaction-header">
-        <div className="header-left">
-          <Link to="/adminHomePage" className="back-btn">
+    <div className="aura-admin-transactions">
+      {/* MOBILE HEADER */}
+      {isMobileView && (
+        <div className="aura-mobile-chrome">
+          <Link to="/adminHomePage" className="aura-mobile-chrome__back">
             <LeftOutlined />
-            <span>Back to Dashboard</span>
           </Link>
-          <div className="header-content">
-            <h1>
-              <DatabaseOutlined />
-              Transaction Management
-            </h1>
-            <p>Monitor and manage all user transactions in real-time</p>
+          <h1 className="aura-mobile-chrome__title">Transactions</h1>
+          <div className="aura-mobile-chrome__actions">
+            <button
+              className="aura-mobile-chrome__button"
+              onClick={fetchDashboardData}
+              disabled={loading}
+            >
+              <SyncOutlined spin={loading} />
+            </button>
+            <button className="aura-mobile-chrome__button">
+              <DownloadOutlined />
+            </button>
           </div>
         </div>
-        <div className="header-actions">
-          <button
-            className="action-btn refresh-btn"
-            onClick={fetchDashboardData}
-            disabled={loading}
-          >
-            <SyncOutlined spin={loading} />
-            <span>Refresh</span>
-          </button>
-          <button className="action-btn export-btn">
-            <DownloadOutlined />
-            <span>Export</span>
-          </button>
+      )}
+
+      <main className="aura-content">
+        {/* DESKTOP HEADER */}
+        {!isMobileView && (
+          <div className="aura-desktop-header">
+            <div className="aura-page-header">
+              <div className="aura-page-header__main">
+                <h1>
+                  <DatabaseOutlined />
+                  Transaction Management
+                </h1>
+                <p className="aura-page-header__subtitle">
+                  Monitor and manage all user transactions in real-time
+                </p>
+              </div>
+              <div className="aura-page-header__actions">
+                <button
+                  className={`aura-icon-button ${viewMode === "grid" ? "aura-icon-button--active" : ""}`}
+                  onClick={() => setViewMode("grid")}
+                  title="Grid View"
+                >
+                  ◼
+                </button>
+                <button
+                  className={`aura-icon-button ${viewMode === "list" ? "aura-icon-button--active" : ""}`}
+                  onClick={() => setViewMode("list")}
+                  title="List View"
+                >
+                  ☰
+                </button>
+                <button
+                  className="aura-icon-button"
+                  onClick={fetchDashboardData}
+                  disabled={loading}
+                  title="Refresh"
+                >
+                  <SyncOutlined spin={loading} />
+                </button>
+                <button className="aura-icon-button" title="Export">
+                  <DownloadOutlined />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STATISTICS CARDS */}
+        <div className="aura-stats-grid">
+          <StatCard
+            title="Total Transactions"
+            value={transaction?.total || 0}
+            iconType="total"
+            loading={loading}
+            change={12.5}
+          />
+          <StatCard
+            title="Completed"
+            value={counts?.completed || 0}
+            iconType="completed"
+            loading={loading}
+            change={8.2}
+          />
+          <StatCard
+            title="Pending"
+            value={counts?.pending || 0}
+            iconType="pending"
+            loading={loading}
+            change={-3.1}
+          />
+          <StatCard
+            title="Total Amount"
+            iconType="amount"
+            loading={loading}
+            totalAmount={getTotalAmount()}
+            change={15.3}
+          />
         </div>
-      </div>
 
-      {/* STATISTICS CARDS SECTION */}
-      <div className="stats-grid">
-        <StatCard
-          title="Total Transactions"
-          value={transaction?.total}
-          color="#3b82f6"
-          icon={<DatabaseOutlined />}
-          loading={loading}
-        />
-        <StatCard
-          title="Completed"
-          value={counts?.completed}
-          color="#10b981"
-          icon={<CheckCircleOutlined />}
-          loading={loading}
-        />
-        <StatCard
-          title="Pending"
-          value={counts?.pending}
-          color="#f59e0b"
-          icon={<ClockCircleOutlined />}
-          loading={loading}
-        />
-        <StatCard
-          title="Cancelled"
-          value={counts?.cancelled}
-          color="#ef4444"
-          icon={<CloseCircleOutlined />}
-          loading={loading}
-        />
-      </div>
+        {/* FILTERS & SEARCH */}
+        {/* <div className="aura-filters-card">
+          <div className="aura-filters-card__header">
+            <h3 className="aura-filters-card__title">
+              <FilterOutlined />
+              Filters & Search
+            </h3>
+            <button className="aura-clear-filters" onClick={clearFilters}>
+              Clear All
+            </button>
+          </div>
 
-      {/* FILTERS & SEARCH SECTION */}
-      <div className="filters-card">
-        <div className="filters-header">
-          <h3>
-            <FilterOutlined />
-            Filters & Search
-          </h3>
-          <button
-            className="clear-filters-btn"
-            onClick={() => {
-              setSearchQuery("");
-              setStatusFilter("all");
-              setTypeFilter("all");
-              setPage(1);
-            }}
-          >
-            Clear All
-          </button>
-        </div>
-
-        <div className="filters-content">
-          <div className="search-box">
-            <SearchOutlined />
+          <div className="aura-search-box">
+            <span className="aura-search-icon">
+              <SearchOutlined />
+            </span>
             <input
               type="text"
-              placeholder="Search transactions..."
+              className="aura-search-input"
+              placeholder="Search transactions, users, or IDs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearch}
-              className="search-input"
             />
             {searchQuery && (
               <button
-                className="clear-search"
+                className="aura-search-clear"
                 onClick={() => setSearchQuery("")}
               >
                 ×
@@ -483,429 +787,329 @@ const AdminTransaction = () => {
             )}
           </div>
 
-          <div className="filter-selectors">
-            <div className="filter-selector">
-              <label>Status</label>
-              <select
-                className="filter-select"
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="all">All Status</option>
-                <option value="completed">Completed</option>
-                <option value="pending">Pending</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="failed">Failed</option>
-              </select>
-            </div>
-
-            <div className="filter-selector">
-              <label>Type</label>
-              <select
-                className="filter-select"
-                value={typeFilter}
-                onChange={(e) => {
-                  setTypeFilter(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="all">All Types</option>
-                <option value="deposit">Deposit</option>
-                <option value="withdrawal">Withdrawal</option>
-                <option value="investment">Investment</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* MAIN CONTENT AREA */}
-      {loading ? (
-        <div className="loading-container">
-          <div className="loading-spinner">
-            <LoadingOutlined spin />
-          </div>
-          <p>Loading transactions...</p>
-        </div>
-      ) : error ? (
-        <div className="error-container">
-          <div className="error-icon">
-            <ExclamationCircleOutlined />
-          </div>
-          <h3>Error Loading Transactions</h3>
-          <p className="error-message">{error}</p>
-          <button className="retry-btn" onClick={fetchDashboardData}>
-            Retry
-          </button>
-        </div>
-      ) : (
-        <div className="transactions-card">
-          <div className="table-header">
-            <div className="table-title">
-              <FileTextOutlined />
-              <h3>Transactions</h3>
-              <span className="total-count">
-                {transaction?.total || 0} total
-              </span>
-            </div>
-
-            <div className="table-summary">
-              <span className="summary-item">
-                <span className="summary-label">Showing</span>
-                <span className="summary-value">
-                  {Math.min(
-                    ((transaction?.page || 1) - 1) * limit + 1,
-                    transaction?.total || 0,
-                  )}
-                  -
-                  {Math.min(
-                    (transaction?.page || 1) * limit,
-                    transaction?.total || 0,
-                  )}
-                </span>
-              </span>
-              <span className="summary-divider">•</span>
-              <span className="summary-item">
-                <span className="summary-label">Page</span>
-                <span className="summary-value">
-                  {transaction?.page || 1} of {transaction?.totalPages || 1}
-                </span>
-              </span>
-            </div>
-          </div>
-
-          {transaction?.transactions?.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">
-                <DatabaseOutlined />
-              </div>
-              <h3>No Transactions Found</h3>
-              <p>No transactions match your current filters</p>
-              <button
-                className="clear-filters-btn"
-                onClick={() => {
-                  setSearchQuery("");
-                  setStatusFilter("all");
-                  setTypeFilter("all");
-                  setPage(1);
-                }}
-              >
-                Clear Filters
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* TABLE */}
-              <div className="table-container">
-                <table className="transactions-table">
-                  <thead>
-                    <tr>
-                      <th>TRANSACTION ID</th>
-                      <th>USER</th>
-                      <th>TYPE</th>
-                      <th>AMOUNT</th>
-                      <th>STATUS</th>
-                      <th>DATE</th>
-                      <th>ACTIONS</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transaction?.transactions?.map((tx) => (
-                      <tr key={tx._id}>
-                        <td>
-                          <div className="transaction-id-cell">
-                            <span className="transaction-id">
-                              {tx._id?.slice(-8).toUpperCase()}
-                            </span>
-                            <span className="transaction-time">
-                              {formatTime(tx.createdAt)}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="user-info-cell">
-                            <div className="user-avatar">
-                              <UserOutlined />
-                            </div>
-                            <div className="user-details">
-                              <div className="user-name">
-                                {tx?.fullName || "Unknown User"}
-                              </div>
-                              <div className="user-email">
-                                {tx?.email || "No email"}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <TypeBadge type={tx.type} />
-                        </td>
-                        <td>
-                          <div className="amount-cell">
-                            <span className="amount-value">
-                              {formatCurrency(
-                                tx.creditedAmount || tx.requestedAmount || 0,
-                              )}
-                            </span>
-                            <span className="amount-currency">
-                              {tx.currency?.toUpperCase() || "USD"}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <StatusBadge status={tx.status} />
-                        </td>
-                        <td>
-                          <div className="date-cell">
-                            <div className="date-value">
-                              {formatDate(tx.createdAt)}
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="action-buttons">
-                            <button
-                              className="action-btn view-btn"
-                              onClick={() => viewTransactionDetails(tx)}
-                              title="View Details"
-                            >
-                              <EyeOutlined />
-                            </button>
-                            {tx.status === "pending" && (
-                              <>
-                                <button
-                                  className="action-btn approve-btn"
-                                  onClick={() =>
-                                    handleMarkComplete(
-                                      tx.userId,
-                                      tx.creditedAmount,
-                                      tx.transactionId,
-                                    )
-                                  }
-                                  title="Approve"
-                                  disabled={loadingAction}
-                                >
-                                  <CheckCircleOutlined />
-                                </button>
-                                <button
-                                  className="action-btn reject-btn"
-                                  onClick={() =>
-                                    handleCancelTransaction(
-                                      tx.userId,
-                                      tx.transactionId,
-                                    )
-                                  }
-                                  title="Reject"
-                                  disabled={loadingAction}
-                                >
-                                  <CloseCircleOutlined />
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* PAGINATION - ENHANCED */}
-              {transaction?.totalPages > 1 && (
-                <div className="pagination-container">
-                  <div className="pagination-info">
-                    Showing {(transaction.page - 1) * limit + 1} to{" "}
-                    {Math.min(transaction.page * limit, transaction.total)} of{" "}
-                    {transaction.total} entries
-                  </div>
-
-                  <div className="pagination-controls">
+          <div className="aura-filter-groups">
+            <div className="aura-filter-group">
+              <h4 className="aura-filter-group__title">Status Filter</h4>
+              <div className="aura-filter-buttons">
+                {["all", "completed", "pending", "cancelled", "failed"].map(
+                  (status) => (
                     <button
-                      className="pagination-btn prev-btn"
-                      onClick={handlePrev}
-                      disabled={!transaction?.hasPrev || loading}
-                    >
-                      <LeftOutlined />
-                      Previous
-                    </button>
-
-                    <div className="page-numbers">{renderPageNumbers()}</div>
-
-                    <button
-                      className="pagination-btn next-btn"
-                      onClick={handleNext}
-                      disabled={!transaction?.hasNext || loading}
-                    >
-                      Next
-                      <RightOutlined />
-                    </button>
-                  </div>
-
-                  <div className="pagination-quick-nav">
-                    <span>Go to page:</span>
-                    <input
-                      type="number"
-                      min="1"
-                      max={transaction?.totalPages}
-                      value={page}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value);
-                        if (value >= 1 && value <= transaction.totalPages) {
-                          setPage(value);
-                        }
+                      key={status}
+                      className={`aura-filter-button ${statusFilter === status ? "aura-filter-button--active" : ""}`}
+                      onClick={() => {
+                        setStatusFilter(status);
+                        setPage(1);
                       }}
-                      className="page-input"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          fetchDashboardData();
-                        }
-                      }}
-                    />
-                    <button
-                      className="go-btn"
-                      onClick={fetchDashboardData}
-                      disabled={loading}
                     >
-                      Go
+                      <StatusBadge status={status === "all" ? null : status} />
+                      <span>{status === "all" ? "All Status" : status}</span>
                     </button>
-                  </div>
+                  ),
+                )}
+              </div>
+            </div>
+
+            <div className="aura-filter-group">
+              <h4 className="aura-filter-group__title">Type Filter</h4>
+              <div className="aura-filter-buttons">
+                {["all", "deposit", "withdrawal", "investment", "profit"].map(
+                  (type) => (
+                    <button
+                      key={type}
+                      className={`aura-filter-button ${typeFilter === type ? "aura-filter-button--active" : ""}`}
+                      onClick={() => {
+                        setTypeFilter(type);
+                        setPage(1);
+                      }}
+                    >
+                      <TypeBadge type={type === "all" ? null : type} />
+                      <span>{type === "all" ? "All Types" : type}</span>
+                    </button>
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
+        </div> */}
+
+        {/* MAIN CONTENT */}
+        {loading ? (
+          <div className="aura-loading">
+            <div className="aura-loading__spinner"></div>
+            <p className="aura-loading__text">Loading transactions...</p>
+          </div>
+        ) : error ? (
+          <div className="aura-error">
+            <div className="aura-error__icon">
+              <ExclamationCircleOutlined />
+            </div>
+            <h3 className="aura-error__title">Error Loading Transactions</h3>
+            <p className="aura-error__message">{error}</p>
+            <button className="aura-retry-button" onClick={fetchDashboardData}>
+              <SyncOutlined />
+              Retry
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="aura-transactions-header">
+              <div>
+                <h3 className="aura-transactions-title">
+                  <FileTextOutlined />
+                  Recent Transactions
+                </h3>
+                <span className="aura-transactions-count">
+                  {transaction?.total || 0} transactions found
+                </span>
+              </div>
+              {!isMobileView && (
+                <div className="aura-view-toggle">
+                  <button
+                    className={`aura-view-toggle__button ${viewMode === "grid" ? "aura-view-toggle__button--active" : ""}`}
+                    onClick={() => setViewMode("grid")}
+                  >
+                    Grid
+                  </button>
+                  <button
+                    className={`aura-view-toggle__button ${viewMode === "list" ? "aura-view-toggle__button--active" : ""}`}
+                    onClick={() => setViewMode("list")}
+                  >
+                    List
+                  </button>
                 </div>
               )}
-            </>
-          )}
-        </div>
-      )}
-
-      {/* TRANSACTION DETAILS MODAL */}
-      {modalVisible && selectedTransaction && (
-        <div
-          className="modal-overlay"
-          onClick={() => !loadingAction && setModalVisible(false)}
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title">
-                <h3>
-                  <FileTextOutlined />
-                  Transaction Details
-                </h3>
-                <StatusBadge status={selectedTransaction.status} />
-              </div>
-              <button
-                className="close-btn"
-                onClick={() => setModalVisible(false)}
-                disabled={loadingAction}
-              >
-                ×
-              </button>
             </div>
 
-            <div className="modal-body">
-              <div className="modal-section">
-                <h4>
-                  <SettingOutlined />
-                  Transaction Information
-                </h4>
-                <div className="details-grid">
-                  <div className="detail-item">
-                    <span className="detail-label">Transaction ID:</span>
-                    <span className="detail-value">
-                      {selectedTransaction._id}
-                    </span>
+            {transaction?.transactions?.length === 0 ? (
+              <div className="aura-empty">
+                <div className="aura-empty__icon">
+                  <DatabaseOutlined />
+                </div>
+                <h3 className="aura-empty__title">No Transactions Found</h3>
+                <p className="aura-empty__message">
+                  No transactions match your current filters
+                </p>
+                <button className="aura-clear-filters" onClick={clearFilters}>
+                  Clear Filters
+                </button>
+              </div>
+            ) : (
+              <>
+                <div
+                  className={`aura-transactions-grid ${viewMode === "list" ? "aura-transactions-grid--list" : ""}`}
+                >
+                  {transaction?.transactions?.map((tx) => (
+                    <TransactionCard
+                      key={tx._id}
+                      transaction={tx}
+                      onViewDetails={viewTransactionDetails}
+                      onApprove={handleMarkComplete}
+                      onReject={handleCancelTransaction}
+                      loadingAction={
+                        loadingAction && actionLoadingId === tx._id
+                      }
+                    />
+                  ))}
+                </div>
+
+                {transaction?.totalPages > 1 && (
+                  <div className="aura-pagination">
+                    <div className="aura-pagination__info">
+                      Showing {(transaction.page - 1) * limit + 1} to{" "}
+                      {Math.min(transaction.page * limit, transaction.total)} of{" "}
+                      {transaction.total} entries
+                    </div>
+
+                    <div className="aura-pagination__controls">
+                      <button
+                        className="aura-pagination__button"
+                        onClick={handlePrev}
+                        disabled={!transaction?.hasPrev || loading}
+                      >
+                        <LeftOutlined />
+                        Previous
+                      </button>
+
+                      <div className="aura-pagination__numbers">
+                        {Array.from(
+                          { length: Math.min(5, transaction.totalPages) },
+                          (_, i) => {
+                            let pageNum;
+                            if (transaction.totalPages <= 5) {
+                              pageNum = i + 1;
+                            } else if (transaction.page <= 3) {
+                              pageNum = i + 1;
+                            } else if (
+                              transaction.page >=
+                              transaction.totalPages - 2
+                            ) {
+                              pageNum = transaction.totalPages - 4 + i;
+                            } else {
+                              pageNum = transaction.page - 2 + i;
+                            }
+
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => handlePageClick(pageNum)}
+                                className={`aura-pagination__number ${transaction.page === pageNum ? "aura-pagination__number--active" : ""}`}
+                                disabled={loading}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          },
+                        )}
+                      </div>
+
+                      <button
+                        className="aura-pagination__button"
+                        onClick={handleNext}
+                        disabled={!transaction?.hasNext || loading}
+                      >
+                        Next
+                        <RightOutlined />
+                      </button>
+                    </div>
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Type:</span>
-                    <span className="detail-value">
-                      <TypeBadge type={selectedTransaction.type} />
-                    </span>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* TRANSACTION DETAILS MODAL */}
+        {modalVisible && selectedTransaction && (
+          <div
+            className="aura-modal-overlay"
+            onClick={() => !loadingAction && setModalVisible(false)}
+          >
+            <div className="aura-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="aura-modal__header">
+                <div className="aura-modal__title">
+                  <FileTextOutlined />
+                  Transaction Details
+                </div>
+                <button
+                  className="aura-modal__close"
+                  onClick={() => setModalVisible(false)}
+                  disabled={loadingAction}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="aura-modal__body">
+                <div className="aura-transaction-overview">
+                  <div className="aura-transaction-icon-large">
+                    {selectedTransaction.type === "deposit" ? (
+                      <ArrowDownOutlined />
+                    ) : selectedTransaction.type === "withdrawal" ? (
+                      <ArrowUpOutlined />
+                    ) : selectedTransaction.type === "investment" ? (
+                      <DollarOutlined />
+                    ) : (
+                      <CreditCardOutlined />
+                    )}
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Amount:</span>
-                    <span className="detail-value amount">
+                  <div className="aura-transaction-amount-large">
+                    <div className="aura-detail-value aura-detail-value--amount">
                       {formatCurrency(
                         selectedTransaction.creditedAmount ||
                           selectedTransaction.requestedAmount ||
+                          selectedTransaction.amount ||
                           0,
                       )}
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Currency:</span>
-                    <span className="detail-value">
-                      {selectedTransaction.currency?.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Created:</span>
-                    <span className="detail-value">
-                      {formatDate(selectedTransaction.createdAt)} at{" "}
-                      {formatTime(selectedTransaction.createdAt)}
-                    </span>
+                    </div>
+                    <div className="aura-transaction-type-large">
+                      <TypeBadge type={selectedTransaction.type} />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="modal-section">
-                <h4>
-                  <UserOutlined />
-                  User Information
-                </h4>
-                <div className="user-details-modal">
-                  <div className="user-avatar-large">
-                    <UserOutlined />
+                <div className="aura-details-grid">
+                  <div className="aura-detail-group">
+                    <h4>Transaction Information</h4>
+                    <div className="aura-modal-detail">
+                      <span className="aura-modal-detail__label">
+                        <TagOutlined />
+                        Transaction ID
+                      </span>
+                      <span className="aura-modal-detail__value aura-modal-detail__value--code">
+                        {selectedTransaction._id}
+                      </span>
+                    </div>
+                    <div className="aura-modal-detail">
+                      <span className="aura-modal-detail__label">
+                        <CalendarOutlined />
+                        Date & Time
+                      </span>
+                      <span className="aura-modal-detail__value">
+                        {formatDate(selectedTransaction.createdAt)} at{" "}
+                        {formatTime(selectedTransaction.createdAt)}
+                      </span>
+                    </div>
+                    {selectedTransaction.walletAddress && (
+                      <div className="aura-modal-detail">
+                        <span className="aura-modal-detail__label">
+                          <WalletOutlined />
+                          Wallet Address
+                        </span>
+                        <span className="aura-modal-detail__value aura-modal-detail__value--code">
+                          {selectedTransaction.walletAddress}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="user-info-modal">
-                    <div className="user-name-modal">
-                      {selectedTransaction?.fullName}
-                    </div>
-                    <div className="user-email-modal">
-                      {selectedTransaction?.email}
-                    </div>
-                    <div className="user-id-modal">
-                      ID: {selectedTransaction.userId}
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              {selectedTransaction.status === "pending" && (
-                <div className="modal-actions">
-                  <button
-                    className="modal-action-btn approve-btn"
-                    onClick={() =>
-                      handleMarkComplete(
-                        selectedTransaction.userId,
-                        selectedTransaction.creditedAmount,
-                        selectedTransaction.transactionId,
-                      )
-                    }
-                    disabled={loadingAction}
-                  >
-                    <CheckCircleOutlined />
-                    Approve Transaction
-                  </button>
-                  <button
-                    className="modal-action-btn reject-btn"
-                    onClick={() =>
-                      handleCancelTransaction(
-                        selectedTransaction.userId,
-                        selectedTransaction.transactionId,
-                      )
-                    }
-                    disabled={loadingAction}
-                  >
-                    <CloseCircleOutlined />
-                    Reject Transaction
-                  </button>
+                  <div className="aura-detail-group">
+                    <h4>User Information</h4>
+                    <div className="aura-user-details-modal">
+                      <div className="aura-user-avatar-large">
+                        <UserOutlined />
+                      </div>
+                      <div className="aura-user-info-modal">
+                        <h5>{selectedTransaction?.fullName}</h5>
+                        <div className="aura-user-email-modal">
+                          <MailOutlined />
+                          {selectedTransaction?.email}
+                        </div>
+                        <div className="aura-user-id-modal">
+                          <UserOutlined />
+                          ID: {selectedTransaction.userId}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
+
+                {selectedTransaction.status === "pending" && (
+                  <div className="aura-modal__actions">
+                    <button
+                      className="aura-modal__button aura-modal__button--approve"
+                      onClick={() => handleMarkComplete(selectedTransaction)}
+                      disabled={loadingAction}
+                    >
+                      <CheckCircleOutlined />
+                      {getActionText()}
+                    </button>
+                    <button
+                      className="aura-modal__button aura-modal__button--reject"
+                      onClick={() =>
+                        handleCancelTransaction(selectedTransaction)
+                      }
+                      disabled={loadingAction}
+                    >
+                      <CloseCircleOutlined />
+                      {getRejectText()}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 };
