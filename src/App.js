@@ -106,6 +106,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
+        {/* <Route
+          path="/adminAddWallet"
+          element={
+            <ProtectedRoute>
+              <AdminAddWallet />
+            </ProtectedRoute>
+          }
+        /> */}
       </Routes>
     </>
   );
