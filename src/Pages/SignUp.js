@@ -145,8 +145,6 @@ const Signup = () => {
     }
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // In real app, you would call your API here:
       const response = await fetch(`${Base_url}signup?key=${Base_Api}`, {
