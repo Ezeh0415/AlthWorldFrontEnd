@@ -3,8 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../Assets/ChatGPT Image Jan 22, 2026, 12_37_21 AM.png";
 import "../styles/SignUp.css";
 
-const Base_url = process.env.REACT_APP_API_URL || "https://althworldbackend.onrender.com/api/";
-const Base_Api = process.env.REACT_APP_API_KEY  || "373f70230eca4c6de0573179c5abc9091b84dfd8b7894265402f0856a02f49b9";
+const Base_url = "https://althworldbackend.onrender.com/api/";
+const Base_Api =
+  "373f70230eca4c6de0573179c5abc9091b84dfd8b7894265402f0856a02f49b9";
 
 const Signup = () => {
   const Navigate = useNavigate();
@@ -145,7 +146,6 @@ const Signup = () => {
     }
 
     try {
-
       // In real app, you would call your API here:
       const response = await fetch(`${Base_url}signup?key=${Base_Api}`, {
         method: "POST",
