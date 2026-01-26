@@ -44,11 +44,9 @@ const Dashboard = () => {
     completedInvestments: 0,
   });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+ 
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -77,7 +75,11 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  },[]);
+
+   useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const transformApiData = (apiData) => {
     return {

@@ -3,26 +3,14 @@ import {
   DashboardOutlined,
   UserOutlined,
   DollarOutlined,
-  ShoppingCartOutlined,
   TeamOutlined,
   MenuOutlined,
   LogoutOutlined,
   SearchOutlined,
   WalletOutlined,
-  CloseOutlined,
   ArrowUpOutlined,
-  ArrowDownOutlined,
-  PlusOutlined,
-  SettingOutlined,
   BellOutlined,
-  CaretDownOutlined,
-  CreditCardOutlined,
-  LineChartOutlined,
   LoadingOutlined,
-  FilterOutlined,
-  DownloadOutlined,
-  InfoCircleOutlined,
-  UserAddOutlined,
   TransactionOutlined,
   SafetyOutlined,
   AreaChartOutlined,
@@ -64,7 +52,7 @@ const AdminHomePage = () => {
   // };
 
   // Fetch Dashboard Data
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = React.useCallback(async () => {
     // if (!checkAuth()) return;
 
     try {
@@ -90,12 +78,12 @@ const AdminHomePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   // Initial Data Fetch
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [fetchDashboardData]);
 
   // Responsive Handling
   useEffect(() => {
@@ -317,6 +305,7 @@ const AdminHomePage = () => {
   return (
     <div className="admin-container modern">
       {/* Mobile Menu Toggle */}
+      {error && <div className="error-message">{error}</div>}
       {isMobile && (
         <button
           className="mobile-menu-toggle"
@@ -360,8 +349,6 @@ const AdminHomePage = () => {
               <DashboardOutlined />
               <span>Dashboard</span>
             </Link>
-
-            
 
             <Link to="/adminTransactions" className="menu-btn">
               <TransactionOutlined />

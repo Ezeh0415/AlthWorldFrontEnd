@@ -9,7 +9,6 @@ import {
   InfoCircleOutlined,
   WalletOutlined,
   SearchOutlined,
-  FilterOutlined,
   LoadingOutlined,
   ExclamationCircleOutlined,
   SaveOutlined,

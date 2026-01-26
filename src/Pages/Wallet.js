@@ -13,10 +13,7 @@ import {
   ExclamationCircleOutlined,
   PlusCircleOutlined,
   SwapOutlined,
-  DollarOutlined,
-  ExportOutlined,
   ArrowRightOutlined,
-  CaretDownOutlined,
 } from "@ant-design/icons";
 import "../styles/Wallet.css";
 import Header from "../Commponets/Header";
@@ -37,7 +34,6 @@ const Wallet = () => {
   });
   const [transactions, setTransactions] = useState([]);
   const [useMockData, setUseMockData] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("USD");
 
   // Exchange rates
   const exchangeRates = {
@@ -47,11 +43,9 @@ const Wallet = () => {
     NGN: 1600,
   };
 
-  useEffect(() => {
-    fetchWalletData();
-  }, []);
+  
 
-  const fetchWalletData = async () => {
+  const fetchWalletData = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -79,7 +73,11 @@ const Wallet = () => {
     } finally {
       setLoading(false);
     }
-  };
+  },[]);
+
+  useEffect(() => {
+    fetchWalletData();
+  }, [fetchWalletData]);
 
   const loadMockData = () => {
     const mockWalletData = {

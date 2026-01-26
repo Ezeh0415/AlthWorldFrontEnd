@@ -25,7 +25,7 @@ import "../styles/Investment.css";
 import Header from "../Commponets/Header";
 import Footer from "../Commponets/Footer";
 import ApiService from "../Commponets/ApiService";
-import ApiServices from "../Commponets/ApiService";
+// import ApiServices from "../Commponets/ApiService";
 
 const Investments = () => {
   const [investments, setInvestments] = useState([]);
@@ -477,7 +477,7 @@ const Investments = () => {
         ...(plan.planId && { planId: plan.planId }),
       };
 
-      console.log("Submitting investment data:", investmentData);
+      
 
     
 

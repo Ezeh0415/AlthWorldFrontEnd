@@ -6,13 +6,11 @@ import {
   SearchOutlined,
   UserOutlined,
   DownOutlined,
-  SettingOutlined,
   LogoutOutlined,
   HomeOutlined,
   WalletOutlined,
   RiseOutlined,
   FileTextOutlined,
-  UserOutlined as UserCircleOutlined,
 } from "@ant-design/icons";
 import "../styles/Header.css";
 import logo from "../Assets/ChatGPT Image Jan 22, 2026, 12_37_21 AM.png";

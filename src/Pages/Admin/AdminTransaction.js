@@ -12,9 +12,6 @@ import {
   FileTextOutlined,
   DatabaseOutlined,
   ExclamationCircleOutlined,
-  LoadingOutlined,
-  SearchOutlined,
-  FilterOutlined,
   DownloadOutlined,
   SyncOutlined,
   LeftOutlined,
@@ -434,11 +431,7 @@ const AdminTransaction = () => {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [page, statusFilter, typeFilter]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -466,7 +459,11 @@ const AdminTransaction = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [limit, page, searchQuery, statusFilter, typeFilter]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [page, statusFilter, typeFilter, fetchDashboardData]);
 
   const handleMarkComplete = async (transaction) => {
     try {
@@ -482,12 +479,7 @@ const AdminTransaction = () => {
         transaction.amount ||
         0;
 
-      console.log("Processing transaction:", {
-        type: transaction.type,
-        transactionId,
-        userId,
-        amount,
-      });
+    
 
       let result;
 
@@ -616,12 +608,12 @@ const AdminTransaction = () => {
     setModalVisible(true);
   };
 
-  const handleSearch = (e) => {
-    if (e.key === "Enter") {
-      setPage(1);
-      fetchDashboardData();
-    }
-  };
+  // const handleSearch = (e) => {
+  //   if (e.key === "Enter") {
+  //     setPage(1);
+  //     fetchDashboardData();
+  //   }
+  // };
 
   const clearFilters = () => {
     setSearchQuery("");
