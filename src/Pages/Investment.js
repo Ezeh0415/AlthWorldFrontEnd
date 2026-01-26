@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   DollarOutlined,
   CalendarOutlined,
@@ -93,7 +93,7 @@ const Investments = () => {
   ];
 
   /* ------------------ FETCH DATA ------------------ */
-  const fetchUserInvestments = async () => {
+  const fetchUserInvestments = React.useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -149,11 +149,11 @@ const Investments = () => {
     } finally {
       setLoading(false);
     }
-  };
+  },[]);
 
   useEffect(() => {
     fetchUserInvestments();
-  }, []);
+  }, [fetchUserInvestments]);
 
   /* ------------------ FILTER INVESTMENTS ------------------ */
   const filteredInvestments = useMemo(() => {
@@ -367,36 +367,6 @@ const Investments = () => {
         return type || "Investment Plan";
     }
   };
-  //   switch (status?.toLowerCase()) {
-  //     case "confirmed":
-  //     case "completed":
-  //     case "success":
-  //       return <CheckCircleFilled style={{ color: "#10b981" }} />;
-  //     case "pending":
-  //       return <ClockCircleOutlined style={{ color: "#f59e0b" }} />;
-  //     case "failed":
-  //     case "cancelled":
-  //       return <CloseCircleOutlined style={{ color: "#ef4444" }} />;
-  //     default:
-  //       return <ClockCircleOutlined style={{ color: "#6b7280" }} />;
-  //   }
-  // };
-
-  // const getDepositStatusText = (status) => {
-  //   switch (status?.toLowerCase()) {
-  //     case "confirmed":
-  //     case "completed":
-  //     case "success":
-  //       return "Confirmed";
-  //     case "pending":
-  //       return "Pending";
-  //     case "failed":
-  //     case "cancelled":
-  //       return "Failed";
-  //     default:
-  //       return "Processing";
-  //   }
-  // };
 
   /* ------------------ CREATE INVESTMENT ------------------ */
   const handleNewInvestment = async ({ amount, startDate, endDate }) => {
@@ -461,7 +431,6 @@ const Investments = () => {
     try {
       setLoadingInvestment(true);
 
-      // This is the correct format based on your original function
       const investmentData = {
         amount: value,
         roi: plan.roi,
@@ -471,9 +440,7 @@ const Investments = () => {
         investmentEndDate: endDate,
         duration: durationDays,
         expectedReturn: value * (plan.roi / 100),
-        // Add userId if required by backend
         userId: localStorage.getItem("userId"),
-        // Add other required fields if needed
         ...(plan.planId && { planId: plan.planId }),
       };
 
@@ -492,7 +459,6 @@ const Investments = () => {
       setTimeout(() => setSuccess(false), 3000);
 
       if (result.message) {
-        // Show notification
         console.log("Success:", result.message);
       }
 
@@ -507,7 +473,6 @@ const Investments = () => {
       } else if (err.request) {
         errorMessage = "Network error. Please check your connection.";
       } else if (err.message) {
-        // Check for specific error messages
         if (err.message.includes("500")) {
           errorMessage = "Server error. Please try again later.";
         } else if (err.message.includes("401")) {
@@ -534,17 +499,28 @@ const Investments = () => {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
 
-    useEffect(() => {
+    // Calculate dates using useMemo (Solution 3)
+    const planDates = useMemo(() => {
+      if (!selectedPlan) return { startDate: "", endDate: "" };
+      
       const plan = investmentPlans.find((p) => p.id === selectedPlan);
-      if (!plan) return;
+      if (!plan) return { startDate: "", endDate: "" };
 
-      const s = new Date();
-      const e = new Date();
-      e.setDate(e.getDate() + plan.duration);
+      const start = new Date();
+      const end = new Date();
+      end.setDate(end.getDate() + plan.duration);
 
-      setStartDate(s.toISOString().split("T")[0]);
-      setEndDate(e.toISOString().split("T")[0]);
-    }, [selectedPlan, investmentPlans]);
+      return {
+        startDate: start.toISOString().split("T")[0],
+        endDate: end.toISOString().split("T")[0]
+      };
+    }, [selectedPlan]); // ✅ useMemo handles the dependency correctly
+
+    // Set dates when planDates changes
+    useEffect(() => {
+      setStartDate(planDates.startDate);
+      setEndDate(planDates.endDate);
+    }, [planDates]);
 
     const handleSubmit = (e) => {
       e.preventDefault();
@@ -828,120 +804,8 @@ const Investments = () => {
             >
               {showValues ? <EyeOutlined /> : <EyeInvisibleOutlined />}
             </button>
-
-            {/* <button
-              className="primary-action-btn"
-              onClick={() => setShowNewInvestmentModal(true)}
-            >
-              <PlusOutlined />
-              New Investment
-            </button> */}
           </div>
         </div>
-
-        {/* Stats Overview */}
-        {/* <div className="portfolio-stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon-wrapper total-invested-icon">
-              <WalletOutlined />
-            </div>
-            <div className="stat-content-wrapper">
-              <div className="stat-label">Total Invested</div>
-              <div className="stat-value">
-                {dashboardData?.wallet?.balance
-                  ? formatCompactCurrency(dashboardData.wallet.balance)
-                  : formatCompactCurrency(userStats.totalInvested)}
-              </div>
-              <div className="stat-details-row">
-                <span className="detail-label">Active:</span>
-                <span className="detail-value">{userStats.active}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon-wrapper total-returns-icon">
-              <DollarOutlined />
-            </div>
-            <div className="stat-content-wrapper">
-              <div className="stat-label">Total Returns</div>
-              <div className="stat-value">
-                {dashboardData?.profits
-                  ? formatCompactCurrency(dashboardData.totalDeposits)
-                  : formatCompactCurrency(userStats.totalReturns)}
-              </div>
-              <div className="stat-details-row">
-                <span className="detail-label">Growth:</span>
-                <span className="detail-value positive">
-                  <ArrowUpOutlined />
-                  {dashboardData?.totalDeposits &&
-                  dashboardData?.wallet?.balance
-                    ? (
-                        (dashboardData.totalDeposits /
-                          dashboardData.wallet.balance) *
-                        100
-                      ).toFixed(1)
-                    : userStats.totalInvested > 0
-                      ? (
-                          (userStats.totalReturns / userStats.totalInvested) *
-                          100
-                        ).toFixed(1)
-                      : 0}
-                  %
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon-wrapper portfolio-value-icon">
-              <LineChartOutlined />
-            </div>
-            <div className="stat-content-wrapper">
-              <div className="stat-label">Portfolio Value</div>
-              <div className="stat-value">
-                {dashboardData?.wallet?.balance && dashboardData?.profits
-                  ? formatCompactCurrency(
-                      dashboardData.wallet.balance + dashboardData.profits,
-                    )
-                  : formatCompactCurrency(userStats.totalPortfolioValue)}
-              </div>
-              <div className="stat-details-row">
-                <span className="detail-label">Current:</span>
-                <span className="detail-value positive">
-                  <ArrowUpOutlined />
-                  {dashboardData?.profits && dashboardData?.wallet?.balance
-                    ? (
-                        (dashboardData.profits / dashboardData.wallet.balance) *
-                        100
-                      ).toFixed(1)
-                    : userStats.totalInvested > 0
-                      ? (
-                          (userStats.totalReturns / userStats.totalInvested) *
-                          100
-                        ).toFixed(1)
-                      : 0}
-                  %
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon-wrapper average-roi-icon">
-              <PercentageOutlined />
-            </div>
-            <div className="stat-content-wrapper">
-              <div className="stat-label">Average ROI</div>
-              <div className="stat-value">
-                {formatPercentage(userStats.avgROI)}
-              </div>
-              <div className="stat-details-row">
-                <span className="detail-label">All Investments</span>
-              </div>
-            </div>
-          </div>
-        </div> */}
 
         {/* Main Content */}
         <div className="portfolio-main-content">
@@ -1148,17 +1012,6 @@ const Investments = () => {
                     </span>
                   </div>
                 </div>
-                {/* <div className="quick-stat">
-                  <div className="quick-stat-icon deposit-stat">
-                    <ArrowDownOutlined />
-                  </div>
-                  <div className="quick-stat-content">
-                    <span className="quick-stat-label">Total Deposits</span>
-                    <span className="quick-stat-value">
-                      {userStats.totalDeposits}
-                    </span>
-                  </div>
-                </div> */}
                 <div className="quick-stat">
                   <div className="quick-stat-icon total-stat">
                     <BarChartOutlined />
@@ -1172,51 +1025,6 @@ const Investments = () => {
                 </div>
               </div>
             </div>
-
-            {/* Recent Deposits */}
-            {/* <div className="sidebar-card recent-deposits">
-              <div className="sidebar-card-header">
-                <h3 className="sidebar-card-title">Recent Deposits</h3>
-                <span className="deposits-total">
-                  {formatCurrency(userStats.totalDepositAmount)}
-                </span>
-              </div>
-              {recentDeposits.length > 0 ? (
-                <div className="deposits-list">
-                  {recentDeposits.map((deposit, index) => (
-                    <div key={deposit._id || index} className="deposit-item">
-                      <div className="deposit-icon-wrapper">
-                        <ArrowDownOutlined className="deposit-icon" />
-                      </div>
-                      <div className="deposit-info">
-                        <div className="deposit-header">
-                          <span className="deposit-currency">
-                            {deposit.currency || "Crypto"}
-                          </span>
-                          <span className="deposit-status">
-                            {getDepositStatusIcon(deposit.status)}
-                            {getDepositStatusText(deposit.status)}
-                          </span>
-                        </div>
-                        <div className="deposit-footer">
-                          <span className="deposit-date">
-                            {formatDate(deposit.createdAt || deposit.date)}
-                          </span>
-                          <span className="deposit-amount">
-                            {formatCurrency(deposit.requestedAmount || 0)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <ComingSoonPlaceholder
-                  message="No deposit history"
-                  iconSize={32}
-                />
-              )}
-            </div> */}
 
             {/* Investment Tips */}
             <div className="sidebar-card investment-tips">
