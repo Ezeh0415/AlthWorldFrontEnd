@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/static/css/main.b7a09b16.css",
+    "main.js": "/static/js/main.039f647b.js",
+    "static/js/453.baf9c687.chunk.js": "/static/js/453.baf9c687.chunk.js",
+    "static/media/ChatGPT Image Jan 22, 2026, 12_37_21 AM.png": "/static/media/ChatGPT Image Jan 22, 2026, 12_37_21 AM.e9a36be640745a8a7e85.png",
+    "index.html": "/index.html",
+    "main.b7a09b16.css.map": "/static/css/main.b7a09b16.css.map",
+    "main.039f647b.js.map": "/static/js/main.039f647b.js.map",
+    "453.baf9c687.chunk.js.map": "/static/js/453.baf9c687.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b7a09b16.css",
+    "static/js/main.039f647b.js"
+  ]
+}
