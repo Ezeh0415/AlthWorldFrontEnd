@@ -477,10 +477,6 @@ const Investments = () => {
         ...(plan.planId && { planId: plan.planId }),
       };
 
-      
-
-    
-
       const result = await ApiService.invest(investmentData);
 
       if (!result || !result.success) {
@@ -548,7 +544,7 @@ const Investments = () => {
 
       setStartDate(s.toISOString().split("T")[0]);
       setEndDate(e.toISOString().split("T")[0]);
-    }, [selectedPlan]);
+    }, [selectedPlan, investmentPlans]);
 
     const handleSubmit = (e) => {
       e.preventDefault();

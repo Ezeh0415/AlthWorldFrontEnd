@@ -103,10 +103,10 @@ class ApiService {
       try {
         data = responseText ? JSON.parse(responseText) : {};
       } catch (parseError) {
-        console.warn(`⚠️ Non-JSON response from ${endpoint}:`, responseText);
+        console.warn(`⚠️ Non-JSON response from :`, responseText);
         data = {
           success: false,
-          message: `Server returned non-JSON response: ${responseText.substring(0, 100)}...`,
+          message: `error from sever please try again later`,
           raw: responseText,
         };
       }

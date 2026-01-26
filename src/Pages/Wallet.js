@@ -10,7 +10,6 @@ import {
   CheckCircleOutlined,
   LoadingOutlined,
   ReloadOutlined,
-  ExclamationCircleOutlined,
   PlusCircleOutlined,
   SwapOutlined,
   ArrowRightOutlined,
@@ -18,6 +17,7 @@ import {
 import "../styles/Wallet.css";
 import Header from "../Commponets/Header";
 import ApiService from "../Commponets/ApiService";
+import ConnectionStatus from "../Commponets/ConnectionStatus";
 
 const Wallet = () => {
   const [balanceVisible, setBalanceVisible] = useState(true);
@@ -34,16 +34,9 @@ const Wallet = () => {
   });
   const [transactions, setTransactions] = useState([]);
   const [useMockData, setUseMockData] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('loading');
+  const [retryCount, setRetryCount] = useState(0);
 
-  // Exchange rates
-  const exchangeRates = {
-    USD: 1,
-    EUR: 0.92,
-    GBP: 0.79,
-    NGN: 1600,
-  };
-
-  
 
   const fetchWalletData = React.useCallback(async () => {
     try {
@@ -53,7 +46,6 @@ const Wallet = () => {
 
       // Try to fetch from real API
       const data = await ApiService.getDashboardData();
-      console.log("Wallet API Response:", data);
 
       // Transform API data for wallet
       const transformedData = {
@@ -65,76 +57,21 @@ const Wallet = () => {
 
       setWalletData(transformedData);
       setTransactions(data.transactions || []);
+      setConnectionStatus('success');
+      setTimeout(() => setConnectionStatus('demo'), 3000);
     } catch (err) {
       console.error("Wallet API Error:", err);
       setError("Failed to load wallet data");
-      setUseMockData(true);
-      loadMockData();
+      setConnectionStatus('error');
+      setRetryCount(prev => prev + 1);
     } finally {
       setLoading(false);
     }
-  },[]);
+  }, []);
 
   useEffect(() => {
     fetchWalletData();
   }, [fetchWalletData]);
-
-  const loadMockData = () => {
-    const mockWalletData = {
-      balance: 12548.75 * exchangeRates.NGN,
-      invBalance: 80000,
-      pending: 2000.0 * exchangeRates.NGN,
-      totalDeposits: 18500.5 * exchangeRates.NGN,
-      totalWithdrawals: 5954.75 * exchangeRates.NGN,
-      totalProfits: 4048.75 * exchangeRates.NGN,
-    };
-
-    const mockTransactions = [
-      {
-        _id: "1",
-        type: "deposit",
-        amount: 3245.5 * exchangeRates.NGN,
-        status: "completed",
-        description: "Bank Transfer Deposit",
-        createdAt: "2024-01-15T14:30:00Z",
-      },
-      {
-        _id: "2",
-        type: "withdrawal",
-        amount: -1245.25 * exchangeRates.NGN,
-        status: "pending",
-        description: "Withdrawal Request",
-        createdAt: "2024-01-14T10:15:00Z",
-      },
-      {
-        _id: "3",
-        type: "investment",
-        amount: -5000.0 * exchangeRates.NGN,
-        status: "completed",
-        description: "Gold Plan Investment",
-        createdAt: "2024-01-13T16:45:00Z",
-      },
-      {
-        _id: "4",
-        type: "profit",
-        amount: 245.75 * exchangeRates.NGN,
-        status: "completed",
-        description: "Weekly Profit Earnings",
-        createdAt: "2024-01-12T09:20:00Z",
-      },
-      {
-        _id: "5",
-        type: "deposit",
-        amount: 1000.0 * exchangeRates.NGN,
-        status: "processing",
-        description: "Crypto Deposit",
-        createdAt: "2024-01-11T11:30:00Z",
-      },
-    ];
-
-    setWalletData(mockWalletData);
-    setTransactions(mockTransactions);
-  };
 
   // Format currency based on selected currency
   const formatCurrency = (amountInNGN) => {
@@ -256,16 +193,16 @@ const Wallet = () => {
       <Header />
 
       {error && useMockData && (
-        <div className="mock-data-banner">
-          <ExclamationCircleOutlined style={{ color: "#92400e" }} />
-          <span>Showing demo data. Real-time connection failed.</span>
-          <button
-            className="btn-retry"
-            onClick={fetchWalletData}
-            title="Retry connection"
-          >
-            <ReloadOutlined />
-          </button>
+        <div>
+          <ConnectionStatus
+            status={connectionStatus}
+            onRetry={fetchWalletData}
+            message={
+              retryCount > 0
+                ? `Connection failed (${retryCount} attempts)`
+                : undefined
+            }
+          />
         </div>
       )}
 
@@ -406,8 +343,6 @@ const Wallet = () => {
                   {formatCurrency(walletData.pending)}
                 </div>
               </div>
-
-              
             </div>
 
             {/* Action Buttons */}
@@ -441,8 +376,6 @@ const Wallet = () => {
                 <span className="action-title">Transfer</span>
                 <span className="action-description">Send to others</span>
               </button> */}
-
-           
             </div>
           </div>
         </div>
@@ -518,7 +451,8 @@ const Wallet = () => {
                           Math.abs(
                             transaction.requestedAmount ||
                               transaction.creditedAmount ||
-                              transaction.amount || 0,
+                              transaction.amount ||
+                              0,
                           ),
                         )}
                       </span>

@@ -1,0 +1,155 @@
+/* components/ConnectionStatus.css */
+.connection-status {
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.connection-status:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.status-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.icon-wrapper {
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
+}
+
+.message-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-message {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1f2937;
+}
+
+.status-subtext {
+  font-size: 13px;
+  color: #6b7280;
+  opacity: 0.85;
+}
+
+.retry-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1.5px solid currentColor;
+  background: white;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.retry-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.retry-btn.retrying {
+  opacity: 0.8;
+}
+
+.progress-track {
+  margin-top: 14px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar.indeterminate {
+  height: 100%;
+  background: linear-gradient(90deg, 
+    rgba(59, 130, 246, 0) 0%, 
+    rgba(59, 130, 246, 1) 50%, 
+    rgba(59, 130, 246, 0) 100%
+  );
+  animation: shimmer 1.5s infinite;
+  width: 50%;
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-animation {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.pulse-animation {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes breathing {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.breathing-animation {
+  animation: breathing 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.hover-rotate {
+  transition: transform 0.3s ease;
+}
+
+.hover-rotate:hover {
+  transform: rotate(90deg);
+}
+
+/* Status-specific styles */
+.connection-status.error .retry-btn:hover {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.connection-status.demo .retry-btn:hover {
+  background: rgba(146, 64, 14, 0.1);
+}
+
+.connection-status.success {
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
