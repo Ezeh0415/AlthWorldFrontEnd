@@ -4,8 +4,11 @@ import "../styles/Login.css";
 import logo from "../Assets/ChatGPT Image Jan 22, 2026, 12_37_21 AM.png";
 
 // You should define these in a config file
-const Base_url = process.env.REACT_APP_API_URL;
-const Base_Api = process.env.REACT_APP_API_KEY;
+const Base_url =
+  process.env.REACT_APP_API_URL || "https://althworldbackend.onrender.com/api/";
+const Base_Api =
+  process.env.REACT_APP_API_KEY ||
+  "373f70230eca4c6de0573179c5abc9091b84dfd8b7894265402f0856a02f49b9";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -203,9 +206,7 @@ const Login = () => {
               className={errors.username ? "error" : ""}
               disabled={isSubmitting}
             />
-            {apiError && (
-              <span className="error-text">{apiError}</span>
-            )}
+            {apiError && <span className="error-text">{apiError}</span>}
           </div>
 
           <div className="input-group">
@@ -229,9 +230,7 @@ const Login = () => {
                 {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
-            {apiError && (
-              <span className="error-text">{apiError}</span>
-            )}
+            {apiError && <span className="error-text">{apiError}</span>}
           </div>
 
           <div className="login-options">

@@ -1,6 +1,8 @@
 // apiService.js
-const API_BASE_URL = "https://althworldbackend.onrender.com/api/";
-const API_KEY =  "373f70230eca4c6de0573179c5abc9091b84dfd8b7894265402f0856a02f49b9";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
+const API_KEY =
+  process.env.REACT_APP_API_KEY ||
+  "373f70230eca4c6de0573179c5abc9091b84dfd8b7894265402f0856a02f49b9";
 
 class ApiService {
   constructor() {
